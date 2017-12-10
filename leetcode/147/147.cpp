@@ -1,4 +1,5 @@
 #include <iostream>
+#include <climits>
 using namespace std;
 
 /**
@@ -13,33 +14,22 @@ struct ListNode {
 class Solution {
   public:
     ListNode* insertionSortList(ListNode* head) {
-      ListNode *current;
+      ListNode helper(INT_MIN);
 
-      current = head;
-      head = nullptr;
-
+      ListNode *current = head;
       while (current != nullptr) {
+        ListNode *prev = &helper;
+
+        while (prev->next != nullptr && prev->next->val < current->val)
+          prev = prev->next;
+
         ListNode *next = current->next;
-        ListNode *ptr = head;
-        ListNode *prev = nullptr;
-
-        while (ptr != nullptr && ptr->val < current->val) {
-          prev = ptr;
-          ptr = ptr->next;
-        }
-
-        if (prev == nullptr) {
-          head = current;
-          current->next = ptr;
-        } else {
-          current->next = ptr;
-          prev->next = current;
-        }
-
+        current->next = prev->next;
+        prev->next = current;
         current = next;
       }
 
-      return head;
+      return helper.next;
     }
 };
 
@@ -56,11 +46,13 @@ int main(void)
   ListNode head(10);
   ListNode middle(2);
   ListNode tail(3);
+  head.next = &middle;
+  middle.next = &tail;
 
   printList(&head);
 
   Solution solution;
-  printList(solution.insertionSortList(nullptr));
+  printList(solution.insertionSortList(&head));
 
   return 0;
 }
