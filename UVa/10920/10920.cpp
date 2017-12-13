@@ -1,5 +1,4 @@
 #include <iostream>
-#include <algorithm>
 #include <cmath>
 
 int main(void)
@@ -10,41 +9,28 @@ int main(void)
     if (SZ == 0 && P == 0)
       break;
 
-    unsigned long long pos, size;
-    unsigned long long line, column;
+    unsigned circle, center, left;
 
-    size = (unsigned long long)std::sqrt(P);
-    if ((size & 1) == 0)
-      size--;
+    circle = (unsigned)(std::sqrt(P - 0.01) + 1) / 2;
+    center = SZ / 2 + 1;
+    left = P - (2*circle - 1) * (2*circle - 1);
 
-    line = SZ / 2 + 1 + (size - 1) / 2;
-    column = SZ / 2 + 1 + (size - 1) / 2;
-    pos = size * size;
-
-    size += 2;
-
-    if (pos < P) {
-      line++;
-      column -= std::min(P - pos, size - 1) - 1; // 1 is already added to line
-      pos += std::min(P - pos, size - 1);
+    if (left <= circle*2) {
+      std::cout << "Line = " << center + circle
+                << ", column = " << center + circle - left << ".\n";
+    } else if (left <= circle*4) {
+      left -= circle * 2;
+      std::cout << "Line = " << center + circle - left
+                << ", column = " << center - circle << ".\n";
+    } else if (left <= circle*6) {
+      left -= circle * 4;
+      std::cout << "Line = " << center - circle
+                << ", column = " << center - circle + left << ".\n";
+    } else {
+      left -= circle * 6;
+      std::cout << "Line = " << center - circle + left
+                << ", column = " << center + circle << ".\n";
     }
-
-    if (pos < P) {
-      line -= std::min(P - pos, size - 1);
-      pos += std::min(P - pos, size - 1);
-    }
-
-    if (pos < P) {
-      column += std::min(P - pos, size - 1);
-      pos += std::min(P - pos, size - 1);
-    }
-
-    if (pos < P) {
-      line += std::min(P - pos, size - 1);
-      pos += std::min(P - pos, size - 1);
-    }
-
-    std::cout << "Line = " << line << ", column = " << column << ".\n";
   }
 
   return 0;
