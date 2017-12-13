@@ -1,48 +1,47 @@
 #include <iostream>
+#include <algorithm>
+#include <cmath>
 
 int main(void)
 {
-  long long SZ, P;
+  unsigned long long SZ, P;
 
   while (std::cin >> SZ >> P) {
     if (SZ == 0 && P == 0)
       break;
 
-    long long pos, size;
-    int line, column;
+    unsigned long long pos, size;
+    unsigned long long line, column;
 
-    line = SZ / 2 + 1;
-    column = SZ / 2 + 1;
+    size = (unsigned long long)std::sqrt(P);
+    if ((size & 1) == 0)
+      size--;
 
-    for (pos = 1, size = 3; size * size <= P; size += 2) {
+    line = SZ / 2 + 1 + (size - 1) / 2;
+    column = SZ / 2 + 1 + (size - 1) / 2;
+    pos = size * size;
+
+    size += 2;
+
+    if (pos < P) {
       line++;
-      column++;
-      pos = size * size;
+      column -= std::min(P - pos, size - 1) - 1; // 1 is already added to line
+      pos += std::min(P - pos, size - 1);
     }
 
     if (pos < P) {
-      pos++;
-      line++;
+      line -= std::min(P - pos, size - 1);
+      pos += std::min(P - pos, size - 1);
     }
 
-    for (int i = 2; i < size && pos < P; i++) {
-      pos++;
-      column--;
+    if (pos < P) {
+      column += std::min(P - pos, size - 1);
+      pos += std::min(P - pos, size - 1);
     }
 
-    for (int i = 1; i < size && pos < P; i++) {
-      pos++;
-      line--;
-    }
-
-    for (int i = 1; i < size && pos < P; i++) {
-      pos++;
-      column++;
-    }
-
-    for (int i = 1; i < size && pos < P; i++) {
-      pos++;
-      line++;
+    if (pos < P) {
+      line += std::min(P - pos, size - 1);
+      pos += std::min(P - pos, size - 1);
     }
 
     std::cout << "Line = " << line << ", column = " << column << ".\n";
