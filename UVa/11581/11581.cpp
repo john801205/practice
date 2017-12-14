@@ -1,24 +1,8 @@
-#include <iostream>
+#include <cstdio>
 #include <string>
 
 #define WIDTH 3
 #define HEIGHT 3
-
-void getGrid(int grid[][WIDTH])
-{
-  std::string line;
-
-  for (int row = 0; row < HEIGHT; row++) {
-    std::getline(std::cin, line);
-
-    for (int col = 0; col < WIDTH; col++) {
-      if (line[col] == '0')
-        grid[row][col] = 0;
-      else
-        grid[row][col] = 1;
-    }
-  }
-}
 
 bool f(int g[][WIDTH], int h[][WIDTH])
 {
@@ -53,19 +37,18 @@ int main(void)
 {
   int N;
 
-  while (std::cin >> N) {
-    std::string line;
-
-    std::getline(std::cin, line); // remove newline after number
+  while (scanf("%d", &N) != EOF) {
+    getchar(); // remove newline after number
 
     for (int i = 0; i < N; i++) {
       int g[HEIGHT][WIDTH] = {0}, h[HEIGHT][WIDTH] = {0};
 
-      std::getline(std::cin, line); // remove empty line
-      getGrid(g);
+      getchar(); // remove empty line
+      for (int row = 0; row < HEIGHT; row++)
+        for (int col = 0; col < WIDTH; col++)
+          scanf("%1d", &g[row][col]);
 
       int count = -1;
-
       while (true) {
         if (f(g, h))
           count++;
@@ -78,7 +61,7 @@ int main(void)
           break;
       }
 
-      std::cout << count << std::endl;
+      printf("%d\n", count);
     }
   }
 
