@@ -8,18 +8,20 @@ int main(void)
     if (n == 0)
       break;
 
-    int a = 0, count = 0;
+    int a = 0, b = 0;
+    bool odd = true;
 
-    for (int i = 0, bit = 1; i < 31; i++, bit <<= 1) {
-      if ((n & bit) == 0)
-        continue;
+    while (n & (-n)) {
+      if (odd)
+        a |= n & (-n);
+      else
+        b |= n & (-n);
 
-      count++;
-      if ((count & 1) == 1)
-        a |= bit;
+      n -= n & (-n);
+      odd = !odd;
     }
 
-    std::cout << a << ' ' << n - a << std::endl;
+    std::cout << a << ' ' << b << std::endl;
   }
 
   return 0;
