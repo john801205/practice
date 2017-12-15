@@ -1,20 +1,6 @@
 #include <iostream>
 #include <climits>
 
-int pow(int x, int p)
-{
-  if (p == 0)
-    return 1;
-  if (p == 1)
-    return x;
-
-  int tmp = pow(x, p/2);
-  if ((p&1) == 0)
-    return tmp * tmp;
-  else
-    return x * tmp * tmp;
-}
-
 int main(void)
 {
   int N;
@@ -22,7 +8,7 @@ int main(void)
   while (std::cin >> N) {
     int number_of_corners, *potencies;
 
-    number_of_corners = pow(2, N);
+    number_of_corners = 1 << N;
     potencies = new int[number_of_corners];
 
     for (int i = 0; i < number_of_corners; i++)
@@ -48,6 +34,8 @@ int main(void)
     }
 
     std::cout << max_sum << std::endl;
+
+    delete[] potencies;
   }
 
   return 0;
