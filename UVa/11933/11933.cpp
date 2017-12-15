@@ -8,25 +8,18 @@ int main(void)
     if (n == 0)
       break;
 
-    int a = 0, b = 0, i = 0;
+    int a = 0, count = 0;
 
-    while (i < 31) {
-      while (i < 31 && ((n >> i) & 1) == 0)
-        i++;
+    for (int i = 0, bit = 1; i < 31; i++, bit <<= 1) {
+      if ((n & bit) == 0)
+        continue;
 
-      if (i < 31)
-        a |= 1 << i;
-      i++;
-
-      while (i < 31 && ((n >> i) & 1) == 0)
-        i++;
-
-      if (i < 31)
-        b |= 1 << i;
-      i++;
+      count++;
+      if ((count & 1) == 1)
+        a |= bit;
     }
 
-    std::cout << a << ' ' << b << std::endl;
+    std::cout << a << ' ' << n - a << std::endl;
   }
 
   return 0;
