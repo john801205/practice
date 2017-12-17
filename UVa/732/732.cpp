@@ -4,47 +4,44 @@
 #include <stack>
 #include <vector>
 
-void transform(std::queue<char> source, std::queue<char> target, std::stack<char> stack, std::vector<char> operations)
+void transform(const std::string &source,
+               const std::string &target,
+               std::string::size_type source_index,
+               std::string::size_type target_index,
+               std::stack<char> &stack,
+               std::vector<char> &operations)
 {
-  while (!source.empty()) {
-    char c = source.front();
-
-    stack.push(c);
-    operations.push_back('i');
-    source.pop();
-
-    if (c == target.front())
-      break;
-  }
-
-  if (stack.top() != target.front())
-    return;
-
-  if (!source.empty()) {
-    transform(source, target, stack, operations);
-
-    while (!stack.empty() && !target.empty() && stack.top() == target.front()) {
-      target.pop();
-      stack.pop();
-      operations.push_back('o');
-      transform(source, target, stack, operations);
-    }
-  } else {
-    while (!stack.empty() && !target.empty() && stack.top() == target.front()) {
-      stack.pop();
-      target.pop();
-      operations.push_back('o');
-    }
-
-    if (!stack.empty() || !target.empty())
-      return;
-
+  if (source_index == source.length() && target_index == target.length()) {
     for (std::vector<char>::size_type i = 0; i < operations.size(); i++) {
       if (i != 0)
         std::cout << ' ';
       std::cout << operations[i];
     }
     std::cout << std::endl;
+
+    return;
+  }
+
+  if (source_index < source.length()) {
+    char c = source[source_index];
+    stack.push(c);
+    operations.push_back('i');
+
+    transform(source, target, source_index+1, target_index, stack, operations);
+
+    stack.pop();
+    operations.pop_back();
+  }
+
+  if (!stack.empty() && stack.top() == target[target_index]) {
+    char c = stack.top();
+    stack.pop();
+    operations.push_back('o');
+
+    transform(source, target, source_index, target_index+1, stack, operations);
+
+    stack.push(c);
+    operations.pop_back();
   }
 }
 
@@ -53,18 +50,11 @@ int main(void)
   std::string source, target;
 
   while (std::cin >> source >> target) {
-    std::queue<char> source_queue, target_queue;
     std::stack<char> stack;
     std::vector<char> operations;
 
-    for (auto it = source.begin(); it != source.end(); ++it)
-      source_queue.push(*it);
-
-    for (auto it = target.begin(); it != target.end(); ++it)
-      target_queue.push(*it);
-
     std::cout << '[' << std::endl;
-    transform(source_queue, target_queue, stack, operations);
+    transform(source, target, 0, 0, stack, operations);
     std::cout << ']' << std::endl;
   }
 
