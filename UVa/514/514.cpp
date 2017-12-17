@@ -1,5 +1,6 @@
 #include <iostream>
 #include <stack>
+#include <string>
 
 int main(void)
 {
@@ -27,8 +28,13 @@ int main(void)
           max_coach = coach;
         }
 
-        if (station.top() == coach)
+        if (station.top() == coach) {
           station.pop();
+        } else {
+          std::string line;
+          std::getline(std::cin, line); // discard remaining input
+          break;
+        }
       }
 
       if (coach == 0) {
