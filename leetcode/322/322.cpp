@@ -12,9 +12,9 @@ class Solution {
       vector<int> result (amount+1, INT_MAX);
 
       result[0] = 0;
-      for (int i = 1; i <= amount; i++)
-        for (auto &coin: coins)
-          if (coin <= i && result[i - coin] != INT_MAX)
+      for (auto &coin: coins)
+        for (int i = coin; i <= amount; i++)
+          if (result[i - coin] != INT_MAX)
             result[i] = min(result[i], result[i - coin]+1);
 
       return result[amount] == INT_MAX ? -1 : result[amount];
