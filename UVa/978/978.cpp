@@ -1,7 +1,7 @@
 #include <cstdio>
-#include <climits>
 
 #include <vector>
+#include <queue>
 #include <algorithm>
 #include <functional>
 
@@ -22,70 +22,41 @@ int main(void)
                       &number_of_green_lemmings,
                       &number_of_blue_lemmings);
 
-      std::vector<int> green_lemmings, blue_lemmings;
-      green_lemmings.reserve(number_of_green_lemmings);
-      blue_lemmings.reserve(number_of_blue_lemmings);
+      std::priority_queue<unsigned> green_lemmings, blue_lemmings;
 
-      // fprintf(stderr, "%u %u %u\n", number_of_battlefields, number_of_green_lemmings, number_of_blue_lemmings);
-
-      for (unsigned i = 0; i < number_of_green_lemmings; i++) {
-        int lemming;
-        scanf("%d", &lemming);
-        green_lemmings.push_back(lemming);
+      for (unsigned i = 0, lemming; i < number_of_green_lemmings; i++) {
+        scanf("%u", &lemming);
+        green_lemmings.push(lemming);
       }
 
-      for (unsigned i = 0; i < number_of_blue_lemmings; i++) {
-        int lemming;
-        scanf("%d", &lemming);
-        blue_lemmings.push_back(lemming);
+      for (unsigned i = 0, lemming; i < number_of_blue_lemmings; i++) {
+        scanf("%u", &lemming);
+        blue_lemmings.push(lemming);
       }
 
       while (!green_lemmings.empty() && !blue_lemmings.empty()) {
-        // fprintf(stderr, "first: %lu %lu\n", green_lemmings.size(), blue_lemmings.size());
-        std::sort(green_lemmings.begin(), green_lemmings.end(), std::greater<int>());
-        std::sort(blue_lemmings.begin(), blue_lemmings.end(), std::greater<int>());
+        std::vector<unsigned> green_winners, blue_winners;
 
-        while (!green_lemmings.empty() && green_lemmings.back() <= 0)
-          green_lemmings.pop_back();
-
-        while (!blue_lemmings.empty() && blue_lemmings.back() <= 0)
-          blue_lemmings.pop_back();
-
-        if (green_lemmings.empty() || blue_lemmings.empty())
-          break;
-
-        // fprintf(stderr, "%lu %lu\n", green_lemmings.size(), blue_lemmings.size());
-
-        int survival_max = INT_MIN;
-        unsigned battle_start = 0, battle_end = number_of_battlefields;
-
-        while (true) {
-          if (green_lemmings.size() < battle_end)
-            battle_end = green_lemmings.size();
-          if (blue_lemmings.size() < battle_end)
-            battle_end = blue_lemmings.size();
-
-          if (battle_start >= battle_end)
+        for (unsigned battle = 0; battle < number_of_battlefields; battle++) {
+          if (green_lemmings.empty() || blue_lemmings.empty())
             break;
 
-          if (green_lemmings[battle_end-1] < survival_max
-              || blue_lemmings[battle_end-1] < survival_max)
-            break;
+          auto green = green_lemmings.top(),
+               blue = blue_lemmings.top();
 
-          for (unsigned battle = battle_start; battle < battle_end; battle++) {
-            int temp = green_lemmings[battle];
-            green_lemmings[battle] -= blue_lemmings[battle];
-            blue_lemmings[battle] -= temp;
+          if (green > blue)
+            green_winners.push_back(green - blue);
+          else if (blue > green)
+            blue_winners.push_back(blue - green);
 
-            if (green_lemmings[battle] > survival_max)
-              survival_max = green_lemmings[battle];
-            if (blue_lemmings[battle] > survival_max)
-              survival_max = blue_lemmings[battle];
-          }
-
-          battle_start = battle_end;
-          battle_end += number_of_battlefields;
+          green_lemmings.pop();
+          blue_lemmings.pop();
         }
+
+        for (auto &lemming: green_winners)
+            green_lemmings.push(lemming);
+        for (auto &lemming: blue_winners)
+            blue_lemmings.push(lemming);
       }
 
       if (green_lemmings.empty() && blue_lemmings.empty()) {
@@ -93,15 +64,17 @@ int main(void)
       } else if (!green_lemmings.empty()) {
         printf("green wins\n");
 
-        std::sort(green_lemmings.begin(), green_lemmings.end(), std::greater<int>());
-        for (auto &lemming: green_lemmings)
-          printf("%d\n", lemming);
+        while (!green_lemmings.empty()) {
+          printf("%u\n", green_lemmings.top());
+          green_lemmings.pop();
+        }
       } else {
         printf("blue wins\n");
 
-        std::sort(blue_lemmings.begin(), blue_lemmings.end(), std::greater<int>());
-        for (auto &lemming: blue_lemmings)
-          printf("%d\n", lemming);
+        while (!blue_lemmings.empty()) {
+          printf("%u\n", blue_lemmings.top());
+          blue_lemmings.pop();
+        }
       }
     }
   }
