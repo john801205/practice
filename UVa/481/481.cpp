@@ -10,8 +10,11 @@ int main(void)
   while (std::cin >> number)
     numbers.push_back(number);
 
+  // previous[i] stores the index of previous smaller elemment for numbers[i]
   std::vector<int> previous (numbers.size(), -1);
+  // results[i] stores the minimum ending value of length-i LIS
   std::vector<int> results;
+  // result_indexes[i] stores the index of results[i] in numbers
   std::vector<std::vector<int>::size_type> result_indexes;
 
   for (std::vector<int>::size_type i = 0; i < numbers.size(); i++) {
