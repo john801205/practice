@@ -26,19 +26,16 @@ int main(void)
       results.push_back(number);
       result_indexes.push_back(i);
     } else {
-      int begin = 0, end = results.size() - 1, middle;
+      std::vector<int>::size_type begin = 0, end = results.size() - 1, middle;
 
       while (begin < end) {
-        middle = (begin + end) / 2;
+        middle = begin + (end-begin)/2;
         if (number <= results[middle]) {
-          end = middle - 1;
+          end = middle;
         } else {
           begin = middle + 1;
         }
       }
-
-      if (number > results[begin])
-        begin++;
 
       if (begin > 0)
         previous[i] = result_indexes[begin - 1];
