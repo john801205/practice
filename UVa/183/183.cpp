@@ -4,110 +4,102 @@
 #include <vector>
 #include <string>
 
-std::string transformB2D(const std::vector<std::vector<bool>> &bit_maps,
-                         int row_top, int row_bottom,
-                         int col_left, int col_right)
+void transformB2D(const std::vector<std::vector<int>> &bit_maps,
+                  int row_top, int row_bottom,
+                  int col_left, int col_right,
+                  int &p)
 {
-  if (row_top == row_bottom && col_left == col_right)
-    return bit_maps[row_top][col_left] ? "1": "0";
+  // ignore 0x0 matrix
+  if (row_top == row_bottom || col_left == col_right)
+    return;
 
-  bool equal = true, previous = bit_maps[row_top][col_left];
-  for (int row = row_top; row < row_bottom && equal; row++)
-    for (int col = col_left; col < col_right && equal; col++)
-      if (bit_maps[row][col] != previous)
-        equal = false;
+  int count = 0;
+  for (int row = row_top; row < row_bottom; row++)
+    for (int col = col_left; col < col_right; col++)
+      count += bit_maps[row][col];
 
-  if (equal)
-    return previous ? "1": "0";
+  if (p > 0 && p % 50 == 0)
+    std::cout << '\n';
+  p++;
 
-  std::string result ("D");
-  result += transformB2D(bit_maps, row_top, (row_top+row_bottom+1)/2, col_left, (col_left+col_right+1)/2);
-  if ((col_left+col_right+1)/2 < col_right)
-    result += transformB2D(bit_maps, row_top, (row_top+row_bottom+1)/2, (col_left+col_right+1)/2, col_right);
-  if ((row_top+row_bottom+1)/2 < row_bottom)
-    result += transformB2D(bit_maps, (row_top+row_bottom+1)/2, row_bottom, col_left, (col_left+col_right+1)/2);
-  if ((row_top+row_bottom+1)/2 < row_bottom && (col_left+col_right+1)/2 < col_right)
-    result += transformB2D(bit_maps, (row_top+row_bottom+1)/2, row_bottom, (col_left+col_right+1)/2, col_right);
-
-  return result;
+  if (count == (row_bottom-row_top) * (col_right-col_left)) {
+    std::cout << '1';
+  } else if (count == 0) {
+    std::cout << '0';
+  } else {
+    std::cout << 'D';
+    int row_middle = (row_top+row_bottom+1) / 2,
+        col_middle = (col_left+col_right+1) / 2;
+    transformB2D(bit_maps, row_top, row_middle, col_left, col_middle, p);
+    transformB2D(bit_maps, row_top, row_middle, col_middle, col_right, p);
+    transformB2D(bit_maps, row_middle, row_bottom, col_left, col_middle, p);
+    transformB2D(bit_maps, row_middle, row_bottom, col_middle, col_right, p);
+  }
 }
 
 void transformD2B(std::vector<std::vector<char>> &bit_maps,
-                  std::queue<char> &queue,
                   int row_top, int row_bottom,
                   int col_left, int col_right)
 {
-  if (queue.empty()) {
-    std::string line;
-    std::cin >> line;
-    for (auto &c: line)
-      queue.push(c);
-  }
+  if (row_top == row_bottom || col_left == col_right)
+    return;
 
-  char c = queue.front();
-  queue.pop();
-
+  char c = std::cin.get();
   if (c == '1' || c == '0') {
     for (int row = row_top; row < row_bottom; row++)
       for (int col = col_left; col < col_right; col++)
         bit_maps[row][col] = c;
   } else {
-    transformD2B(bit_maps, queue, row_top, (row_top+row_bottom+1)/2, col_left, (col_left+col_right+1)/2);
-    if ((col_left+col_right+1)/2 < col_right)
-      transformD2B(bit_maps, queue, row_top, (row_top+row_bottom+1)/2, (col_left+col_right+1)/2, col_right);
-    if ((row_top+row_bottom+1)/2 < row_bottom)
-      transformD2B(bit_maps, queue, (row_top+row_bottom+1)/2, row_bottom, col_left, (col_left+col_right+1)/2);
-    if ((row_top+row_bottom+1)/2 < row_bottom && (col_left+col_right+1)/2 < col_right)
-      transformD2B(bit_maps, queue, (row_top+row_bottom+1)/2, row_bottom, (col_left+col_right+1)/2, col_right);
+    int row_middle = (row_top+row_bottom+1) / 2,
+        col_middle = (col_left+col_right+1) / 2;
+    transformD2B(bit_maps, row_top, row_middle, col_left, col_middle);
+    transformD2B(bit_maps, row_top, row_middle, col_middle, col_right);
+    transformD2B(bit_maps, row_middle, row_bottom, col_left, col_middle);
+    transformD2B(bit_maps, row_middle, row_bottom, col_middle, col_right);
   }
 }
 
 int main(void)
 {
-  std::string format;
+  char format;
 
   while (std::cin >> format) {
-    if (format == "#")
+    if (format == '#')
       break;
 
     int rows, cols;
     std::cin >> rows >> cols;
 
-    if (format == "B") {
-      std::vector<std::vector<bool>> bit_maps (rows, std::vector<bool> (cols));
-      for (int i = 0; i < rows*cols; ) {
-        std::string line;
-        std::cin >> line;
+    std::cout << (format == 'B'? 'D': 'B')
+              << std::setw(4) << rows
+              << std::setw(4) << cols
+              << std::endl;
 
-        for (std::string::size_type j = 0; j < line.length(); j++) {
-          int row = (i+j)/cols, col = (i+j)%cols;
-          if (line[j] == '0')
-            bit_maps[row][col] = false;
-          else
-            bit_maps[row][col] = true;
-        }
+    if (format == 'B') {
+      std::vector<std::vector<int>> bit_maps (rows, std::vector<int> (cols));
+      std::string line;
 
-        i += line.length();
+      while (line.length() < unsigned(rows*cols)) {
+        std::string temp;
+        std::cin >> temp;
+        line += temp;
       }
 
-      std::cout << "D" << std::setw(4) << rows << std::setw(4) << cols;
-      std::string result = transformB2D(bit_maps, 0, rows, 0, cols);
-      for (std::string::size_type i = 0; i < result.length(); i++) {
-        if (i%50 == 0)
-          std::cout << '\n';
-        std::cout << result[i];
-      }
+      for (int row = 0; row < rows; row++)
+        for (int col = 0; col < cols; col++)
+          bit_maps[row][col] = line[row*cols + col] - '0';
+
+      int p = 0;
+      transformB2D(bit_maps, 0, rows, 0, cols, p);
       std::cout << '\n';
     } else {
       std::vector<std::vector<char>> bit_maps (rows, std::vector<char> (cols));
-      std::queue<char> queue;
 
-      transformD2B(bit_maps, queue, 0, rows, 0, cols);
+      transformD2B(bit_maps, 0, rows, 0, cols);
 
-      std::cout << "B" << std::setw(4) << rows << std::setw(4) << cols;
       for (int i = 0; i < rows; i++) {
         for (int j = 0; j < cols; j++) {
-          if ((i*cols+j) % 50 == 0)
+          if (i+j > 0 && (i*cols+j) % 50 == 0)
             std::cout << '\n';
           std::cout << bit_maps[i][j];
         }
