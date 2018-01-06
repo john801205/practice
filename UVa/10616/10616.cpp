@@ -1,7 +1,7 @@
 #include <iostream>
 #include <vector>
 
-int my_module(int a, int b)
+int module(int a, int b)
 {
   int r = a % b;
   if (r < 0)
@@ -12,55 +12,55 @@ int my_module(int a, int b)
 unsigned long long solve(const std::vector<int> &numbers, const int D, const int M)
 {
   // not so much numbers can be selected
-  if (numbers.size() < unsigned(M))
+  if (M <= 0 || numbers.size() < unsigned(M))
     return 0;
 
-  // result[i][j] represents the number of last number index is i and modulus of sum is j
+  // result[i][j] represents the number of last number index is i and remainder of sum is j
   std::vector<std::vector<unsigned long long>> result (numbers.size(),
                                                        std::vector<unsigned long long> (D, 0));
 
   // set the initial condition when only select 1 number
   for (std::vector<int>::size_type i = 0; i < numbers.size(); i++)
-    result[i][my_module(numbers[i], D)] = 1;
+    result[i][module(numbers[i], D)] = 1;
 
   // m represents how many number are already selected
   for (int m = 1; m < M; m++)
   {
-    // number_of_modulus[i] stores the number of modulus i
+    // number_of_remainders[i] stores the number of remainder i
     // when m numbers are selected
-    std::vector<unsigned long long> number_of_modulus (D, 0);
+    std::vector<unsigned long long> number_of_remainders (D, 0);
     for (const auto &number: result)
     {
-      for (int modulus = 0; modulus < D; modulus++)
+      for (int remainder = 0; remainder < D; remainder++)
       {
-        number_of_modulus[modulus] += number[modulus];
+        number_of_remainders[remainder] += number[remainder];
       }
     }
 
     // numbers[i] is current selected number
     for (int i = numbers.size()-1; i >= m; i--)
     {
-      // update number_of_modulus[i] to stores the number of modulus
-      // when numbers of index less than i are selected
-      for (int modulus = 0; modulus < D; modulus++)
+      // update number_of_remainders[i] to stores the number of remainder
+      // when m numbers of index less than i are selected
+      for (int remainder = 0; remainder < D; remainder++)
       {
-        number_of_modulus[modulus] -= result[i][modulus];
+        number_of_remainders[remainder] -= result[i][remainder];
       }
 
-      for (int modulus = 0; modulus < D; modulus++)
+      for (int remainder = 0; remainder < D; remainder++)
       {
 
-        // (target + numbers[i]) % D == modulus
-        int target = my_module(modulus - my_module(numbers[i], D), D);
-        result[i][modulus] = number_of_modulus[target];
+        // (target + numbers[i]) % D == remainder
+        int target = module(remainder - module(numbers[i], D), D);
+        result[i][remainder] = number_of_remainders[target];
       }
     }
 
     for (int i = m-1; i >= 0; i--)
     {
-      for (int modulus = 0; modulus < D; modulus++)
+      for (int remainder = 0; remainder < D; remainder++)
       {
-        result[i][modulus] = 0;
+        result[i][remainder] = 0;
       }
     }
   }
