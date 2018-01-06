@@ -26,18 +26,33 @@ unsigned long long solve(const std::vector<int> &numbers, const int D, const int
   // m represents how many number are already selected
   for (int m = 1; m < M; m++)
   {
-    // numbers[i] is current selected number
-    for (int i = numbers.size()-1; i >= m; i--)
+    // number_of_modulus[i] stores the number of modulus i
+    // when m numbers are selected
+    std::vector<unsigned long long> number_of_modulus (D, 0);
+    for (const auto &number: result)
     {
       for (int modulus = 0; modulus < D; modulus++)
       {
-        result[i][modulus] = 0;
+        number_of_modulus[modulus] += number[modulus];
+      }
+    }
 
-        int r = my_module(numbers[i], D);
-        int target = r > modulus ? D - r + modulus: modulus - r;
+    // numbers[i] is current selected number
+    for (int i = numbers.size()-1; i >= m; i--)
+    {
+      // update number_of_modulus[i] to stores the number of modulus
+      // when numbers of index less than i are selected
+      for (int modulus = 0; modulus < D; modulus++)
+      {
+        number_of_modulus[modulus] -= result[i][modulus];
+      }
 
-        for (int j = i - 1; j >= 0; j--)
-          result[i][modulus] += result[j][target];
+      for (int modulus = 0; modulus < D; modulus++)
+      {
+
+        // (target + numbers[i]) % D == modulus
+        int target = my_module(modulus - my_module(numbers[i], D), D);
+        result[i][modulus] = number_of_modulus[target];
       }
     }
 
