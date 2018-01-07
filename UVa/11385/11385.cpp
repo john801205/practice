@@ -1,43 +1,28 @@
 #include <climits>
 
 #include <iostream>
+#include <map>
 #include <vector>
 
-std::vector<unsigned> build_fibonacci(void)
+std::map<unsigned, unsigned> build_fibonacci_map(void)
 {
-  std::vector<unsigned> fibonacci = {1, 2};
-  unsigned pre = 2, cur = 3;
+  std::map<unsigned, unsigned> fibonacci;
+  fibonacci[1] = 0;
+  fibonacci[2] = 1;
 
-  while (cur < INT_MAX)
+  unsigned index = 2;
+  unsigned v1 = 1, v2 = 2, v3 = 3;
+  while (v3 < INT_MAX)
   {
-    fibonacci.push_back(cur);
+    fibonacci[v3] = index;
 
-    auto temp = pre;
-    pre = cur;
-    cur = cur + temp;
+    v1 = v2;
+    v2 = v3;
+    v3 = v1+v2;
+    index++;
   }
 
   return fibonacci;
-}
-
-std::vector<unsigned>::size_type binary_search(const std::vector<unsigned> &fibonacci,
-                                               unsigned value)
-{
-  std::vector<unsigned>::size_type left = 0,
-                                   right = fibonacci.size() - 1;
-
-  while (left <= right) {
-    std::vector<unsigned>::size_type middle = (left+right) / 2;
-
-    if (fibonacci[middle] == value)
-      return middle;
-    else if (fibonacci[middle] > value)
-      right = middle - 1;
-    else
-      left = middle + 1;
-  }
-
-  return fibonacci.size();
 }
 
 bool is_upper_character(const char c)
@@ -45,9 +30,9 @@ bool is_upper_character(const char c)
   return c >= 'A' && c <= 'Z';
 }
 
-std::string decrypht(const std::vector<unsigned> &fibonacci,
-                     const std::string           &ciphertext,
-                     const std::vector<unsigned> &keys)
+std::string decrypht(const std::map<unsigned, unsigned> &fibonacci,
+                     const std::string                  &ciphertext,
+                     const std::vector<unsigned>        &keys)
 {
   std::string plaintext;
   std::string::size_type pos = 0;
@@ -62,7 +47,7 @@ std::string decrypht(const std::vector<unsigned> &fibonacci,
     if (pos == ciphertext.length())
       break;
 
-    auto new_pos = binary_search(fibonacci, key);
+    unsigned new_pos = fibonacci.at(key);
     if (new_pos >= plaintext.length())
       plaintext.resize(new_pos+1, ' ');
 
@@ -76,7 +61,7 @@ std::string decrypht(const std::vector<unsigned> &fibonacci,
 int main(void)
 {
   int number_of_test_cases;
-  std::vector<unsigned> fibonacci = build_fibonacci();
+  std::map<unsigned, unsigned> fibonacci = build_fibonacci_map();
 
   while (std::cin >> number_of_test_cases)
   {
