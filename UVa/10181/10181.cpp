@@ -4,6 +4,7 @@
 #include <functional>
 #include <iostream>
 #include <queue>
+#include <set>
 #include <vector>
 
 struct Cell
@@ -41,9 +42,20 @@ unsigned manhattan_distance(const std::array<int, 16> &tables)
   return distance;
 }
 
+unsigned long long key(const std::array<int, 16> &tables)
+{
+  unsigned long long k = 0, BASE = 16;
+
+  for (int i = 0; i < 16; i++)
+    k = k * BASE + tables[i];
+
+  return k;
+}
+
 void Astar(const std::array<int, 16> &tables)
 {
   std::priority_queue<Cell, std::vector<Cell>, std::greater<Cell>> queue;
+  std::set<unsigned long long> set;
 
   unsigned distance, zero_index;
 
@@ -80,6 +92,8 @@ void Astar(const std::array<int, 16> &tables)
     //   std::cerr << '\n';
     // }
 
+    set.insert(key(cell.tables));
+
     unsigned row = cell.zero_index / 4,
              col = cell.zero_index % 4;
 
@@ -95,7 +109,10 @@ void Astar(const std::array<int, 16> &tables)
       distance = manhattan_distance(new_table);
       zero_index = (row-1)*4+col;
 
-      queue.emplace(cell.steps+1, distance, zero_index, cell.routes+'U', new_table);
+      auto k = key(new_table);
+
+      if (set.count(k) == 0)
+        queue.emplace(cell.steps+1, distance, zero_index, cell.routes+'U', new_table);
     }
 
     if (row < 3 and cell.routes.back() != 'U') {
@@ -110,7 +127,10 @@ void Astar(const std::array<int, 16> &tables)
       distance = manhattan_distance(new_table);
       zero_index = (row+1)*4+col;
 
-      queue.emplace(cell.steps+1, distance, zero_index, cell.routes+'D', new_table);
+      auto k = key(new_table);
+
+      if (set.count(k) == 0)
+        queue.emplace(cell.steps+1, distance, zero_index, cell.routes+'D', new_table);
     }
 
     if (col > 0 and cell.routes.back() != 'R') {
@@ -125,7 +145,10 @@ void Astar(const std::array<int, 16> &tables)
       distance = manhattan_distance(new_table);
       zero_index = row*4+col-1;
 
-      queue.emplace(cell.steps+1, distance, zero_index, cell.routes+'L', new_table);
+      auto k = key(new_table);
+
+      if (set.count(k) == 0)
+        queue.emplace(cell.steps+1, distance, zero_index, cell.routes+'L', new_table);
     }
 
     if (col < 3 and cell.routes.back() != 'L') {
@@ -140,7 +163,10 @@ void Astar(const std::array<int, 16> &tables)
       distance = manhattan_distance(new_table);
       zero_index = row*4+col+1;
 
-      queue.emplace(cell.steps+1, distance, zero_index, cell.routes+'R', new_table);
+      auto k = key(new_table);
+
+      if (set.count(k) == 0)
+        queue.emplace(cell.steps+1, distance, zero_index, cell.routes+'R', new_table);
     }
   }
 }
