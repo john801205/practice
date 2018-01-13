@@ -1,18 +1,8 @@
+#include <climits>
+
 #include <algorithm>
 #include <iostream>
 #include <vector>
-
-struct Line
-{
-  int L, R;
-
-  Line (int L_, int R_): L(L_), R(R_) {}
-
-  friend bool operator<(const Line &a, const Line &b)
-  {
-    return a.L <= b.L;
-  }
-};
 
 int main(void)
 {
@@ -28,46 +18,72 @@ int main(void)
       first = false;
 
       int M;
-      std::vector<Line> lines;
-
       std::cin >> M;
+
+      // lines[i] stores the rightmost endpoint of segments starting
+      // from index i. if the left endpoint of segment is negative,
+      // we store its rightmost endpoint at lines[0] and left endpoint
+      // at zero_left
+      int zero_left;
+      std::vector<int> lines(M, INT_MIN);
+
       for (int L, R; std::cin >> L >> R; )
       {
         if (L == 0 and R == 0)
           break;
 
-        lines.emplace_back(L, R);
-      }
-
-      std::sort(std::begin(lines), std::end(lines));
-
-      int current = 0;
-      std::vector<std::size_t> set;
-
-      for (std::size_t i = 0; i < lines.size(); i++)
-      {
-        if (lines[i].L > current or lines[i].R <= current)
+        // if not overlapping with [0, M]
+        if (R <= 0 or L >= M)
           continue;
 
-        std::size_t max = i;
-        for ( ;lines[i+1].L <= current; i++)
+        int orig_L = L;
+        if (L <= 0)
+          L = 0;
+
+        if (R > lines[L])
         {
-          if (lines[i+1].R > lines[max].R)
-            max = i+1;
+          lines[L] = R;
+          if (L == 0)
+            zero_left = orig_L;
         }
-
-        set.push_back(max);
-        current = lines[max].R;
-
-        if (current >= M)
-          break;
       }
 
-      if (current >= M)
+      std::size_t left = 0, right = 0;
+      std::vector<std::size_t> set;
+
+      while (left <= right and right < unsigned(M))
+      {
+        int max = INT_MIN;
+        std::size_t max_index;
+
+        for (std::size_t i = left; i <= right; i++)
+        {
+          if (lines[i] > max)
+          {
+            max = lines[i];
+            max_index = i;
+          }
+        }
+
+        if (max == INT_MIN)
+          break;
+
+        set.push_back(max_index);
+
+        left = right+1;
+        right = max;
+      }
+
+      if (right >= unsigned(M))
       {
         std::cout << set.size() << '\n';
         for (const auto &i: set)
-          std::cout << lines[i].L << ' ' << lines[i].R << '\n';
+        {
+          if (i == 0)
+            std::cout << zero_left << ' ' << lines[i] << '\n';
+          else
+            std::cout << i << ' ' << lines[i] << '\n';
+        }
       }
       else
       {
@@ -75,6 +91,6 @@ int main(void)
       }
     }
   }
-  
+
   return 0;
 }
