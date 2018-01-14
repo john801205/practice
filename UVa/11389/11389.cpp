@@ -30,6 +30,8 @@ int main(void)
       routes.push(route);
     }
 
+    // the greedy choice: assign the longest route to the
+    // driver with most available route without overtime
     int overtime = 0;
     for (int i = 0; i < n; i++)
     {
