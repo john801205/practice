@@ -11,7 +11,7 @@ struct Group
 
 int DFS(const std::vector<Group>            &groups,
         const std::vector<Group>::size_type  start,
-              std::bitset<10>               &people,
+              std::bitset<9>                &people,
         const int                            score)
 {
   if (people.all())
