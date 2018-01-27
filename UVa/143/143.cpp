@@ -3,7 +3,6 @@
 #include <algorithm>
 #include <iomanip>
 #include <iostream>
-#include <limits>
 #include <vector>
 
 struct Point
@@ -11,124 +10,35 @@ struct Point
   double x, y;
 
   Point (const double x, const double y): x(x), y(y) {}
-
-  friend bool operator<(const Point& a, const Point& b)
-  {
-    if (a.x != b.x)
-      return a.x < b.x;
-    else
-      return a.y < b.y;
-  }
 };
 
-struct Edge
+double cross(const Point &a, const Point &b, const Point &c)
 {
-  // y - y1 = m * (x - x1)
-  const double m, x1, y1, x2, y2;
-  const bool same;
-
-  double slope(const Point& a, const Point& b)
-  {
-    if (a.x == b.x)
-      return std::numeric_limits<double>::max();
-    else
-      return (a.y - b.y) / (a.x - b.x);
-  }
-
-  Edge (const Point& a, const Point& b): m{slope(a, b)},
-                                         x1{a.x},
-                                         y1{a.y},
-                                         x2{b.x},
-                                         y2{b.y},
-                                         same{a.x == b.x and a.y == b.y}
-  {
-  }
-
-  bool online(double x, double y) const
-  {
-    if (same)
-      return x == this->x1 and y == this->y1;
-
-    if (x1 > x2 and (x > x1 or x < x2))
-      return false;
-
-    if (x1 < x2 and (x < x1 or x > x2))
-      return false;
-
-    if (m == std::numeric_limits<double>::max())
-      return x == this->x1;
-    else
-      return fabs(y - m * (x - this->x1) - this->y1) < 0.000001;
-  }
-
-  bool right(double x, double y) const
-  {
-    if (same)
-      return false;
-
-    if (m == std::numeric_limits<double>::max())
-      return x > this->x1;
-    else
-      return y < m * (x - this->x1) + this->y1;
-  }
-
-  bool left(double x, double y) const
-  {
-    if (same)
-      return false;
-
-    if (m == std::numeric_limits<double>::max())
-      return x < this->x1;
-    else
-      return y > m * (x - this->x1) + this->y1;
-  }
-};
+  return (a.x - b.x)*(a.y - c.y) - (a.y - b.y)*(a.x - c.x);
+}
 
 int main(void)
 {
-  while (true)
+  double x1, y1, x2, y2, x3, y3;
+
+  while (std::cin >> x1 >> y1
+                  >> x2 >> y2
+                  >> x3 >> y3)
   {
-    unsigned zero = 0;
-    std::vector<Point> triangle;
-
-    int left_x   = std::numeric_limits<int>::max(),
-        right_x  = std::numeric_limits<int>::min(),
-        bottom_y = std::numeric_limits<int>::max(),
-        top_y    = std::numeric_limits<int>::min();
-
-    for (int i = 0; i < 3; i++)
-    {
-      double x, y;
-      std::cin >> x >> y;
-      triangle.emplace_back(x, y);
-
-      if (x == 0 and y == 0)
-        zero++;
-
-      if (std::ceil(x) < left_x)
-        left_x = std::ceil(x);
-      if (std::floor(x) > right_x)
-        right_x = std::floor(x);
-      if (std::ceil(y) < bottom_y)
-        bottom_y = std::ceil(y);
-      if (std::floor(y) > top_y)
-        top_y = std::floor(y);
-    }
-
-    if (zero == 3)
+    if (x1 == 0 and y1 == 0
+        and x2 == 0 and y2 == 0
+        and x3 == 0 and y3 == 0)
       break;
 
-    std::sort(std::begin(triangle), std::end(triangle));
-    // std::cerr << triangle[0].x << ' ' << triangle[1].y << '\n';
+    Point a(x1, y1),
+          b(x2, y2),
+          c(x3, y3);
 
-    std::vector<Edge> edges =
-    {
-      Edge(triangle[0], triangle[1]),
-      Edge(triangle[1], triangle[2]),
-      Edge(triangle[2], triangle[0]),
-    };
-
-    // std::cerr << edges[0].m << ' ' << edges[1].m << '\n';
+    // calculate the bounding rectangle
+    int left_x   = std::ceil(std::min({x1, x2, x3})),
+        right_x  = std::floor(std::max({x1, x2, x3})),
+        bottom_y = std::ceil(std::min({y1, y2, y3})),
+        top_y    = std::floor(std::max({y1, y2, y3}));
 
     // Trees are only grown in [1, 99]
     if (left_x < 1)
@@ -145,47 +55,18 @@ int main(void)
     {
       for (int y = bottom_y; y <= top_y; y++)
       {
-        if (edges[0].online(x, y)
-            or edges[1].online(x, y)
-            or edges[2].online(x, y))
-        {
-          inpoint++;
-          // std::cerr << x << ' ' << y << '\n';
-          // std::cerr << edges[0].same << ' ' << edges[1].same << ' ' << edges[2].same << '\n';
-          // std::cerr << edges[0].online(99, 98) << ' ' << edges[1].online(99, 98) << ' ' << edges[2].online(99, 98) << '\n';
-          continue;
-        }
+        Point z(x, y);
 
-        if (edges[0].same or edges[1].same or edges[2].same)
+        if (cross(a, b, z) * cross(a, c, z) > 1e-8)
           continue;
 
-        if (edges[1].right(triangle[0].x, triangle[0].y))
-        {
-          // std::cerr << "right\n";
-          unsigned right = 0;
-          if (edges[0].right(x, y))
-            right++;
-          if (edges[1].right(x, y))
-            right++;
-          if (edges[2].right(x, y))
-            right++;
+        if (cross(b, a, z) * cross(b, c, z) > 1e-8)
+          continue;
 
-          if (right == 2)
-            inpoint++;
-        }
-        else
-        {
-          unsigned left = 0;
-          if (edges[0].left(x, y))
-            left++;
-          if (edges[1].left(x, y))
-            left++;
-          if (edges[2].left(x, y))
-            left++;
+        if (cross(c, a, z) * cross(c, b, z) > 1e-8)
+          continue;
 
-          if (left == 2)
-            inpoint++;
-        }
+        inpoint++;
       }
     }
 
