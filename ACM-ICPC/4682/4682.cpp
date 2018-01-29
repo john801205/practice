@@ -1,63 +1,52 @@
 #include <iostream>
-
-struct Node
-{
-  Node *left, *right;
-
-  Node (): left(nullptr), right(nullptr) {}
-};
+#include <vector>
 
 struct Trie
 {
-  Node root;
+  std::vector<std::size_t> tree;
 
-  Trie (): root() {}
-
-  ~Trie()
-  {
-    free(&root);
-  }
-
-  void free(Node *ptr)
-  {
-    if (ptr->left != nullptr)
-      free(ptr->left);
-    delete ptr->left;
-
-    if (ptr->right != nullptr)
-      free(ptr->right);
-    delete ptr->right;
-  }
+  Trie (): tree({0, 0}) {}
 
   void insert(const int num)
   {
-    Node *ptr = &root;
+    std::size_t index = 0;
     for (int i = 31; i >= 0; i--)
     {
       bool bit = ((num >> i) & 1) == 0x1;
 
       if (bit)
       {
-        if (ptr->left == nullptr)
-          ptr->left = new Node;
-        ptr = ptr->left;
+        if (tree[index] == 0)
+        {
+          tree[index] = tree.size();
+          tree.push_back(0);
+          tree.push_back(0);
+        }
+
+        index = tree[index];
       }
       else
       {
-        if (ptr->right == nullptr)
-          ptr->right = new Node;
-        ptr = ptr->right;
+        if (tree[index+1] == 0)
+        {
+          tree[index+1] = tree.size();
+          tree.push_back(0);
+          tree.push_back(0);
+        }
+
+        index = tree[index+1];
       }
     }
   }
 
   int findMax(const int num)
   {
-    Node *ptr = &root;
     int result = 0;
+
+    std::size_t index = 0;
     for (int i = 31; i >= 0; i--)
     {
-      if (ptr->right == nullptr and ptr->left == nullptr)
+      if (tree[index] == 0 and tree[index+1] == 0)
       {
         result <<= 1;
         continue;
@@ -67,29 +56,29 @@ struct Trie
 
       if (bit)
       {
-        if (ptr->right != nullptr)
+        if (tree[index+1] != 0)
         {
-          ptr = ptr->right;
+          index = tree[index+1];
           result <<= 1;
         }
         else
         {
-          ptr = ptr->left;
+          index = tree[index];
           result <<= 1;
-          result += 1;
+          result |= 1;
         }
       }
       else
       {
-        if (ptr->left != nullptr)
+        if (tree[index] != 0)
         {
-          ptr = ptr->left;
+          index = tree[index];
           result <<= 1;
-          result += 1;
+          result |= 1;
         }
         else
         {
-          ptr = ptr->right;
+          index = tree[index+1];
           result <<= 1;
         }
       }
