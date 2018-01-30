@@ -100,32 +100,28 @@ int main(void)
       int N;
       std::cin >> N;
 
-      // array[i] stores a_0 ^ a_1 ^ a_2 ^ ... ^ a_i
-      // a_0 = 0
-      int *array = new int[N+1];
-
-      array[0] = 0;
-      trie.insert(0);
-      for (int i = 1; i <= N; i++)
-      {
-        std::cin >> array[i];
-        array[i] = array[i] ^ array[i-1];
-        trie.insert(array[i]);
-      }
-
       int max = 0;
 
-      for (int i = 0; i <= N; i++)
-      {
-        int complement = trie.findMax(array[i]);
+      int current_xor = 0;
+      trie.insert(0);
 
-        if ((array[i] ^ complement) > max)
-          max = array[i] ^ complement;
+      for (int i = 1; i <= N; i++)
+      {
+        int number;
+        std::cin >> number;
+
+        int xor_ = current_xor ^ number;
+        int complement = trie.findMax(xor_);
+
+        if ((complement ^ xor_) > max)
+          max = complement ^ xor_;
+
+        trie.insert(xor_);
+
+        current_xor = xor_;
       }
 
       std::cout << max << '\n';
-
-      delete[] array;
     }
   }
 
