@@ -1,6 +1,7 @@
 #include <cmath>
 
 #include <algorithm>
+#include <iostream>
 
 #include "BigIntegerString.hpp"
 
@@ -146,6 +147,78 @@ static std::string substract(const std::string &a, const std::string &b)
   return remove_leading_zero(result);
 }
 
+static std::string multiply(const std::string &a, const char b)
+{
+  std::string result(a.size(), 0);
+
+  char carry = 0;
+  for (std::string::size_type i = 0; i < a.size(); i++)
+  {
+    result[i] = (a[i] * b + carry) % 10;
+    carry     = (a[i] * b + carry) / 10;
+  }
+
+  if (carry != 0)
+    result += carry;
+
+  return result;
+}
+
+static std::string multiply(const std::string &a, const std::string &b)
+{
+  std::string result(1, 0);
+  std::string multiplicand(a);
+
+  for (std::string::size_type i = 0; i < b.size(); i++)
+  {
+    // for (int j = multiplicand.size() - 1; j >= 0; j--)
+    //   std::cerr << static_cast<int>(multiplicand[j]);
+    // std::cerr << " * " << static_cast<int>(b[i]) << " = ";
+
+    // std::string multi = multiply(multiplicand, b[i]);
+    // for (int j = multi.size() - 1; j >= 0; j--)
+    //   std::cerr << static_cast<int>(multi[j]);
+    // std::cerr << '\n';
+
+    result = add(result, multiply(multiplicand, b[i]));
+    multiplicand = multiply(multiplicand, 10);
+  }
+
+  return result;
+}
+
+static std::string divide(const std::string &a, const std::string &b)
+{
+  std::string result;
+  std::string dividend(1, 0);
+
+  for (std::string::size_type i = a.size(); i-- > 0; )
+  {
+    dividend = add(multiply(dividend, 10), std::string (1, a[i]));
+
+    // for (auto j = dividend.size(); j-- > 0;)
+    //   std::cerr << static_cast<int>(dividend[j]);
+    // std::cerr << " / ";
+    // for (auto j = b.size(); j-- > 0;)
+    //   std::cerr << static_cast<int>(b[j]);
+    // std::cerr << " = ";
+
+    char count = 0;
+    while (larger(dividend, b) or dividend == b)
+    {
+      dividend = substract(dividend, b);
+      count++;
+    }
+
+    // std::cerr << static_cast<int>(count) << '\n';
+    result += count;
+  }
+
+  std::reverse(std::begin(result), std::end(result));
+
+  return remove_leading_zero(result);
+}
+
 BigIntegerString operator+(const BigIntegerString &a, const unsigned b)
 {
   return a + BigIntegerString(b);
@@ -231,6 +304,41 @@ BigIntegerString operator-(const BigIntegerString &a,
       result.m_digits = substract(a.m_digits, b.m_digits);
     }
   }
+
+  return result;
+}
+
+BigIntegerString operator*(const BigIntegerString &a,
+                           const BigIntegerString &b)
+{
+  BigIntegerString result;
+
+  if (a.m_digits.size() >= b.m_digits.size())
+    result.m_digits = multiply(a.m_digits, b.m_digits);
+  else
+    result.m_digits = multiply(b.m_digits, a.m_digits);
+
+  // check if result is zero
+  if (result.m_digits.size() == 1 and result.m_digits[0] == 0)
+    result.m_positive = true;
+  else
+    result.m_positive = (a.m_positive == b.m_positive);
+
+  return result;
+}
+
+
+BigIntegerString operator/(const BigIntegerString &a,
+                           const BigIntegerString &b)
+{
+  BigIntegerString result;
+  result.m_digits = divide(a.m_digits, b.m_digits);
+
+  // check if result is zero
+  if (result.m_digits.size() == 1 and result.m_digits[0] == 0)
+    result.m_positive = true;
+  else
+    result.m_positive = (a.m_positive == b.m_positive);
 
   return result;
 }

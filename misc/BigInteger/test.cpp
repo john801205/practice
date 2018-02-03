@@ -1,4 +1,5 @@
 #include <cassert>
+#include <iostream>
 
 #define private public
 #include "BigIntegerString.hpp"
@@ -97,6 +98,30 @@ int main(void)
   assert(BigIntegerString("-923") - BigIntegerString("-1234") == BigIntegerString("311"));
 
   assert(BigIntegerString("-1") - BigIntegerString("-1") == BigIntegerString("0"));
+
+  // operator*
+  assert(BigIntegerString("1") * BigIntegerString("1") == BigIntegerString("1"));
+  assert(BigIntegerString("-1") * BigIntegerString("1") == BigIntegerString("-1"));
+  assert(BigIntegerString("-1") * BigIntegerString("-1") == BigIntegerString("1"));
+  assert(BigIntegerString("-1") * BigIntegerString("0") == BigIntegerString("0"));
+  assert(BigIntegerString("0") * BigIntegerString("0") == BigIntegerString("0"));
+
+  assert(BigIntegerString("1234") * BigIntegerString("4321") == BigIntegerString("5332114"));
+  assert(BigIntegerString("99") * BigIntegerString("99") == BigIntegerString("9801"));
+  assert(BigIntegerString("4294967295") * BigIntegerString("4294967295") == BigIntegerString("18446744065119617025"));
+  assert(BigIntegerString("8589934592") * BigIntegerString("36893488147419103232") == BigIntegerString("316912650057057350374175801344"));
+
+  // operator/
+  assert(BigIntegerString("7") / BigIntegerString("2") == BigIntegerString("3"));
+  assert(BigIntegerString("-7") / BigIntegerString("-2") == BigIntegerString("3"));
+  assert(BigIntegerString("7") / BigIntegerString("-2") == BigIntegerString("-3"));
+  assert(BigIntegerString("-7") / BigIntegerString("2") == BigIntegerString("-3"));
+
+  assert(BigIntegerString("42") / BigIntegerString("2") == BigIntegerString("21"));
+  assert(BigIntegerString("-43") / BigIntegerString("2") == BigIntegerString("-21"));
+  assert(BigIntegerString("43") / BigIntegerString("-2") == BigIntegerString("-21"));
+  assert(BigIntegerString("1") / BigIntegerString("2") == BigIntegerString("0"));
+  assert(BigIntegerString("1180591620717411303425") / BigIntegerString("12345678910") == BigIntegerString("95627922070"));
 
   return 0;
 }

@@ -19,10 +19,15 @@ class BigIntegerString
     bool operator==(const BigIntegerString &b) const;
     bool operator>(const BigIntegerString &b) const;
 
-    friend BigIntegerString operator+(const BigIntegerString &, const unsigned);
+    friend BigIntegerString operator+(const BigIntegerString &,
+                                      const unsigned);
     friend BigIntegerString operator+(const BigIntegerString &,
                                       const BigIntegerString &);
     friend BigIntegerString operator-(const BigIntegerString &,
+                                      const BigIntegerString &);
+    friend BigIntegerString operator*(const BigIntegerString &,
+                                      const BigIntegerString &);
+    friend BigIntegerString operator/(const BigIntegerString &,
                                       const BigIntegerString &);
 
     friend std::ostream &operator<<(std::ostream &, const BigIntegerString &);
