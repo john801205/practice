@@ -1,40 +1,42 @@
 #include <iostream>
 #include <string>
-#include <unordered_map>
-#include <unordered_set>
 #include <vector>
 
-bool is_duplicate_number(const std::string &number)
+bool is_duplicate_number(unsigned number)
 {
   std::vector<bool> used (10, false);
 
-  for (const auto &digit: number)
+  while (number != 0)
   {
-    if (used[digit - '0'])
+    unsigned digit = number % 10;
+
+    if (used[digit])
       return true;
 
-    used[digit - '0'] = true;
+    used[digit] = true;
+    number /= 10;
   }
 
   return false;
 }
 
-bool is_runaround_number(const std::string &number)
+bool is_runaround_number(const unsigned number)
 {
   // check if any digit is duplicated
   if (is_duplicate_number(number))
     return false;
 
   // check if the sequence is valid
-  const std::string::size_type size  = number.size();
-        std::vector<bool>      status (size, false);
-        std::string::size_type i     = 0;
-        std::string::size_type count = 0;
+  const std::string            number_string = std::to_string(number);
+  const std::string::size_type size          = number_string.size();
+        std::string::size_type i             = 0;
+        std::string::size_type count         = 0;
+        std::vector<bool>      used (size, false);
 
-  while (!status[i])
+  while (!used[i])
   {
-    status[i] = true;
-    i = (i + number[i] - '0') % size;
+    used[i] = true;
+    i = (i + number_string[i] - '0') % size;
     count++;
   }
 
@@ -46,11 +48,6 @@ bool is_runaround_number(const std::string &number)
 
   // check if all digits have been used
   return count == size;
-}
-
-bool is_runaround_number(const unsigned number)
-{
-  return is_runaround_number(std::to_string(number));
 }
 
 int main(void)
