@@ -26,14 +26,16 @@ bool is_runaround_number(const std::string &number)
     return false;
 
   // check if the sequence is valid
-  const std::string::size_type size = number.size();
+  const std::string::size_type size  = number.size();
         std::vector<bool>      status (size, false);
+        std::string::size_type i     = 0;
+        std::string::size_type count = 0;
 
-  std::string::size_type i = 0;
   while (!status[i])
   {
     status[i] = true;
     i = (i + number[i] - '0') % size;
+    count++;
   }
 
   // check if the sequence return to the first digits
@@ -43,15 +45,7 @@ bool is_runaround_number(const std::string &number)
   }
 
   // check if all digits have been used
-  for (const auto &visited: status)
-  {
-    if (!visited)
-    {
-      return false;
-    }
-  }
-
-  return true;
+  return count == size;
 }
 
 bool is_runaround_number(const unsigned number)
@@ -65,20 +59,20 @@ int main(void)
 
   std::vector<unsigned> map (10000000);
 
-  for (unsigned i = 9999999, last_runaround = 0; i > 9; i--)
+  for (unsigned i = 9876543; i > 9; i--)
   {
     if (is_runaround_number(i))
     {
-      last_runaround = i;
       map[i] = i;
     }
     else
     {
-      map[i] = last_runaround;
+      map[i] = map[i+1];
     }
   }
 
   unsigned number, case_ = 0;
+
   while (std::cin >> number && number != 0)
   {
     case_++;
