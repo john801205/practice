@@ -1,19 +1,18 @@
 #ifndef __BIGPOSITIVEINTEGER_H__
 #define __BIGPOSITIVEINTEGER_H__
 
-#include <climits>
+#include <limits>
 #include <string>
 #include <vector>
 
 #define BASE_T uint32_t
 #define MAX_T  uint64_t
-#define BASE_NUM (UINT32_MAX+1UL)
 
 class BigPositiveInteger
 {
   private:
     std::vector<BASE_T> m_digits = {0};
-    MAX_T               m_base   = BASE_NUM;
+    MAX_T               m_base   = std::numeric_limits<BASE_T>::max() + 1UL;
 
   public:
     BigPositiveInteger();
