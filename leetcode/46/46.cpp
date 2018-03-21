@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <iostream>
 #include <vector>
 
@@ -6,39 +7,28 @@ class Solution
   public:
     std::vector<std::vector<int>> permute(std::vector<int>& nums)
     {
-      std::vector<bool>             selected(nums.size(), false);
-      std::vector<int>              permutation;
       std::vector<std::vector<int>> result;
-
-      dfs(nums, selected, permutation, result);
-
+      dfs(nums, 0, result);
       return result;
     }
 
   private:
-    void dfs(const std::vector<int>              &nums,
-                   std::vector<bool>             &selected,
-                   std::vector<int>              &permutation,
-                   std::vector<std::vector<int>> &result)
+    void dfs(std::vector<int>              &nums,
+             std::vector<int>::size_type    index,
+             std::vector<std::vector<int>> &result)
     {
-      bool non_selection = true;
-
-      for (std::vector<bool>::size_type i = 0; i < selected.size(); i++)
+      if (index >= nums.size()-1)
       {
-        if (!selected[i])
-        {
-          selected[i] = true;
-          permutation.push_back(nums[i]);
-          dfs(nums, selected, permutation, result);
-          permutation.pop_back();
-          selected[i] = false;
-          non_selection = false;
-        }
+        result.push_back(nums);
+        return;
       }
 
-      if (non_selection)
+
+      for (std::vector<bool>::size_type i = index; i < nums.size(); i++)
       {
-        result.push_back(permutation);
+        std::swap(nums[index], nums[i]);
+        dfs(nums, index+1, result);
+        std::swap(nums[index], nums[i]);
       }
     }
 };
