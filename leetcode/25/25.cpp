@@ -14,45 +14,35 @@ class Solution
     {
       ListNode result = ListNode(0);
       ListNode *last  = &result;
+      last->next = head;
 
-      while (head != nullptr)
+      int size = 0;
+
+      for (ListNode *current = head; current != nullptr; current = current->next)
       {
-        ListNode *current, *prev;
-        int size = 0;
+        size++;
+      }
 
-        // check if the remaining size is larger than or equal to k
-        current = head;
-        for (size = 0; size < k; size++)
-        {
-          if (current == nullptr)
-          {
-            break;
-          }
-
-          current = current->next;
-        }
-
-        if (size != k)
-        {
-          last->next = head;
-          break;
-        }
-
+      while (size >= k)
+      {
         // reverse the first k node from head
-        prev = nullptr;
-        current = head;
+        ListNode *current, *prev;
 
-        for (int i = 0; i < k; i++)
+        prev = last->next;
+        current = prev->next;
+
+        for (int i = 1; i < k; i++)
         {
-          ListNode *next = current->next;
-          current->next = prev;
-          prev = current;
-          current = next;
+          ListNode *temp = current->next;
+          current->next = last->next;
+          prev->next = temp;
+          last->next = current;
+
+          current = temp;
         }
 
-        last->next = prev;
-        last = head;
-        head = current;
+        last = prev;
+        size -= k;
       }
 
       return result.next;
@@ -76,10 +66,12 @@ int main(void)
   head->next->next = new ListNode(3);
   head->next->next->next = new ListNode(4);
   head->next->next->next->next = new ListNode(5);
+  head->next->next->next->next->next = new ListNode(6);
+  head->next->next->next->next->next->next = new ListNode(7);
 
   print(head);
 
   Solution s;
-  print(s.reverseKGroup(head, 2));
+  print(s.reverseKGroup(head, 3));
   return 0;
 }
