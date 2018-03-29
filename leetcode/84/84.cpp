@@ -1,62 +1,32 @@
-#include <algorithm>
 #include <iostream>
-#include <limits>
-#include <utility>
+#include <stack>
 #include <vector>
 
 class Solution
 {
   public:
-    int largestRectangleArea(const std::vector<int> &heights)
+    int largestRectangleArea(std::vector<int> &heights)
     {
-      if (!heights.empty() && heights.front() < heights.back())
-      {
-        std::vector<int> copy = heights;
-        std::reverse(std::begin(copy), std::end(copy));
-        return largestRectangleArea(copy);
-      }
-
-      std::cerr << "heights: ";
-      for (const auto &height: heights)
-        std::cerr << height << ' ';
-      std::cerr << '\n';
-
-      std::vector<std::pair<int, int>> stack;
+      std::stack<std::vector<int>::size_type> stack;
       int largest = 0;
 
-      for (int i = 0; i < heights.size(); i++)
+      // We append a 0 at the end of heights to make sure every non-zero
+      // element will be popped during the for loop
+      heights.push_back(0);
+
+      for (std::vector<int>::size_type i = 0; i < heights.size(); i++)
       {
-        int index = i;
-        int current = heights[i];
-
-        while (!stack.empty())
+        while (!stack.empty() && heights[i] <= heights[stack.top()])
         {
-          int height = stack.back().second;
+          std::vector<int>::size_type index = stack.top();
+          stack.pop();
 
-          if (heights[i] > height)
-          {
-            break;
-          }
+          int current = heights[index] * (stack.empty() ? i : i-stack.top()-1);
 
-          index = stack.back().first;
-          current = std::max(current, heights[i] * (i-index+1));
-          stack.pop_back();
+          largest = std::max(largest, current);
         }
 
-        for (const auto &rec: stack)
-        {
-          current = std::max(current, rec.second * (i-rec.first+1));
-        }
-
-        largest = std::max(largest, current);
-        stack.emplace_back(std::make_pair(index, heights[i]));
-
-        std::cerr << "stack: ";
-        for (const auto &rec: stack)
-          std::cerr << '(' << rec.first << ", " << rec.second << ") ";
-        std::cerr << '\n';
-
-        std::cerr << "largest: " << largest << ", current: " << current << '\n';
+        stack.push(i);
       }
 
       return largest;
@@ -66,10 +36,11 @@ class Solution
 int main(void)
 {
   Solution s;
+  // std::vector<int> heights = {0, 1,2,3,4,5,6,7,8,9, 7, 2, 3, 4, 1, 5, 0, 9, 10, 21, 3};
+  // std::vector<int> heights = {2, 1, 5, 6, 2, 3};
+  std::vector<int> heights = {0, 1,2,3,4,5,6,7,8,9};
 
-  // std::cout << s.largestRectangleArea({0, 1,2,3,4,5,6,7,8,9}) << '\n';
-  // std::cout << s.largestRectangleArea({2, 1, 5, 6, 2, 3}) << '\n';
-  std::cout << s.largestRectangleArea({0, 1,2,3,4,5,6,7,8,9, 7, 2, 3, 4, 1, 5, 0, 9, 10, 21, 3}) << '\n';
+  std::cout << s.largestRectangleArea(heights) << '\n';
 
   return 0;
 }
