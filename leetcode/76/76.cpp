@@ -29,11 +29,6 @@ class Solution
           continue;
         }
 
-        if (count == 0)
-        {
-          start = i;
-        }
-
         if (maps[s[i]] > 0)
         {
           count++;
@@ -88,8 +83,6 @@ int main(void)
   assert(s.minWindow("acdebcadeab", "aab") == "adeab");
   assert(s.minWindow("acacacacdebcadeab", "aab") == "adeab");
   assert(s.minWindow("bba", "ab") == "ba");
-
-  std::cout << "Final: " << s.minWindow("bba", "abb") << '\n';
 
   return 0;
 }
