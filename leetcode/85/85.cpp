@@ -61,7 +61,7 @@ class Solution
             int left = std::min(lefts[i-1][j-1], rows[i][j-1]) + 1;
             int top  = std::min(tops[i-1][j-1], cols[i-1][j]) + 1;
 
-            if (left * top > area)
+            if (left * top >= area)
             {
               area = left * top;
               tops[i][j] = top;
