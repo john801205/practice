@@ -34,7 +34,7 @@ class Solution
         {
           TreeNode *top = stack.top();
 
-          if (top->right != last)
+          if (top->right != nullptr && top->right != last)
           {
             current = top->right;
           }
