@@ -15,40 +15,35 @@ class Solution
   public:
     std::vector<int> postorderTraversal(TreeNode* root)
     {
-      std::vector<int>       results;
-      std::stack<TreeNode *> stack;
-      std::stack<bool>       status;
+      std::vector<int>        results;
+      std::stack<TreeNode *>  stack;
+      TreeNode               *current;
+      TreeNode               *last;
 
-      stack.push(root);
-      status.push(false);
+      current = root;
+      last    = nullptr;
 
-      while (!stack.empty())
+      while (current != nullptr || !stack.empty())
       {
-        TreeNode *current  = stack.top();
-        bool      explored = status.top();
-
-        stack.pop();
-        status.pop();
-
-        if (current == nullptr)
+        if (current != nullptr)
         {
-          continue;
-        }
-
-        if (explored)
-        {
-          results.emplace_back(current->val);
+          stack.push(current);
+          current = current->left;
         }
         else
         {
-          stack.push(current);
-          status.push(true);
+          TreeNode *top = stack.top();
 
-          stack.push(current->right);
-          status.push(false);
-
-          stack.push(current->left);
-          status.push(false);
+          if (top->right != last)
+          {
+            current = top->right;
+          }
+          else
+          {
+            results.emplace_back(top->val);
+            last = top;
+            stack.pop();
+          }
         }
       }
 
