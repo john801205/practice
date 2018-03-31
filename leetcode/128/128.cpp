@@ -8,70 +8,26 @@ class Solution
   public:
     int longestConsecutive(const std::vector<int> &nums)
     {
-      std::vector<std::vector<int>::size_type> parents (nums.size());
-      std::vector<std::vector<int>::size_type> ranks   (nums.size(), 0);
-      std::vector<int> sizes (nums.size(), 1);
       std::unordered_map<int, std::vector<int>::size_type> maps;
-      int longest = nums.size() == 0 ? 0 : 1;
-
-      for (std::vector<int>::size_type i = 0; i < parents.size(); i++)
-      {
-        parents[i] = i;
-      }
-
-      for (std::vector<int>::size_type i = 0; i < nums.size(); i++)
-      {
-        maps[nums[i]] = i;
-      }
+      std::vector<int>::size_type longest = 0;
 
       for (const auto &num: nums)
       {
-        if (maps.find(num + 1) == maps.end())
+        if (maps.find(num) == maps.end())
         {
-          continue;
-        }
+          std::vector<int>::size_type left  = (maps.find(num-1) != maps.end() ? maps[num-1]: 0);
+          std::vector<int>::size_type right = (maps.find(num+1) != maps.end() ? maps[num+1]: 0);
+          std::vector<int>::size_type sum   = left + right + 1;
 
-        std::vector<int>::size_type pi = findRoot(parents, maps[num]);
-        std::vector<int>::size_type pj = findRoot(parents, maps[num+1]);
+          longest = std::max(longest, sum);
 
-        if (pi == pj)
-        {
-          continue;
-        }
-
-        longest = std::max(longest, sizes[pi] + sizes[pj]);
-
-        if (ranks[pi] > ranks[pj])
-        {
-          parents[pj] = pi;
-          sizes[pi] += sizes[pj];
-        }
-        else if (ranks[pi] < ranks[pj])
-        {
-          parents[pi] = pj;
-          sizes[pj] += sizes[pi];
-        }
-        else
-        {
-          parents[pi] = pj;
-          ranks[pj] += 1;
-          sizes[pj] += sizes[pi];
+          maps[num] = sum;
+          maps[num-left] = sum;
+          maps[num+right] = sum;
         }
       }
 
       return longest;
-    }
-
-    std::vector<int>::size_type findRoot(std::vector<std::vector<int>::size_type> &parents,
-                                         std::vector<int>::size_type               index)
-    {
-      if (parents[index] != index)
-      {
-        auto root = findRoot(parents, parents[index]);
-        parents[index] = root;
-      }
-
-      return parents[index];
     }
 };
 
