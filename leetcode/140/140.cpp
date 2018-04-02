@@ -2,6 +2,7 @@
 #include <iostream>
 #include <string>
 #include <unordered_set>
+#include <unordered_map>
 #include <vector>
 
 class Solution
@@ -9,64 +10,44 @@ class Solution
   public:
     std::vector<std::string> wordBreak(const std::string s, const std::vector<std::string>& wordDict)
     {
-      std::unordered_set<std::string>       set    (std::begin(wordDict), std::end(wordDict));
-      std::vector<std::vector<std::string>> dp     (s.size()+1);
-
-      for (std::string::size_type i = 0; i < s.size(); i++)
-      {
-        for (std::string::size_type j = i+1; j-- > 0; )
-        {
-          if (j != 0 && dp[j].empty())
-          {
-            continue;
-          }
-
-          std::string word = s.substr(j, i-j+1);
-
-          if (set.find(word) == set.end())
-          {
-            continue;
-          }
-
-          dp[i+1].emplace_back(word);
-        }
-      }
-
-      std::vector<std::string> result, stack;
-      backtracking(dp, s.size(), stack, result);
-
-      return result;
+      std::unordered_map<std::string, std::vector<std::string>> cache;
+      std::unordered_set<std::string> set (std::begin(wordDict), std::end(wordDict));
+      return backtracking(s, set, cache);
     }
 
-    void backtracking(const std::vector<std::vector<std::string>>            &dp,
-                      const std::vector<std::vector<std::string>>::size_type  index,
-                            std::vector<std::string>                         &stack,
-                            std::vector<std::string>                         &result)
+    std::vector<std::string> backtracking(const std::string s,
+                                          const std::unordered_set<std::string> &set,
+                                                std::unordered_map<std::string, std::vector<std::string>> &cache)
     {
-      if (dp[index].empty())
+      auto search = cache.find(s);
+      if (search != cache.end())
       {
-        if (index == 0)
+        return search->second;
+      }
+
+      std::vector<std::string> result;
+
+      for (std::string::size_type i = s.size(); i-- > 1; )
+      {
+        std::string word = s.substr(i);
+
+        if (set.find(word) != set.end())
         {
-          std::string s = stack.back();
-
-          for (std::vector<std::string>::size_type i = stack.size()-1; i-- > 0; )
+          auto prefixes = backtracking(s.substr(0, i), set, cache);
+          for (const auto &prefix: prefixes)
           {
-            s += ' ';
-            s += stack[i];
+            result.emplace_back(prefix + ' ' + word);
           }
-
-          result.emplace_back(s);
         }
-
-        return;
       }
 
-      for (const auto &prefix: dp[index])
+      if (set.find(s) != set.end())
       {
-        stack.emplace_back(prefix);
-        backtracking(dp, index-prefix.size(), stack, result);
-        stack.pop_back();
+        result.emplace_back(s);
       }
+
+      cache[s] = result;
+      return result;
     }
 };
 
