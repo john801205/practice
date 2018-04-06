@@ -1,32 +1,89 @@
 #include <cassert>
-#include <climits>
 #include <cmath>
 #include <algorithm>
 #include <iostream>
-#include <string>
 #include <unordered_map>
 #include <vector>
+
+class BIT
+{
+  private:
+    std::vector<int> tree;
+
+  public:
+    BIT(const std::vector<int> &nums): tree()
+    {
+      this->tree.resize(nums.size()+1);
+
+      for (std::vector<int>::size_type i = 0; i < this->tree.size(); i++)
+      {
+        this->tree[i] = 0;
+      }
+
+      for (std::vector<int>::size_type i = 1; i <= nums.size(); i++)
+      {
+        this->tree[i] += nums[i-1];
+
+        auto j = i + (i & -i);
+
+        if (j < this->tree.size())
+        {
+          this->tree[j] += this->tree[i];
+        }
+      }
+    }
+
+    int query(std::vector<int>::size_type i)
+    {
+      int sum = 0;
+
+      for (auto j = i+1; j != 0; j -= (j & -j))
+      {
+        sum += this->tree[j];
+      }
+
+      return sum;
+    }
+
+    void add(std::vector<int>::size_type i, int val)
+    {
+      for (auto j = i+1; j < this->tree.size(); j += (j & -j))
+      {
+        this->tree[j] += val;
+      }
+    }
+
+    int lookup(std::vector<int>::size_type i)
+    {
+      i++;
+      int v = this->tree[i];
+      auto x = i - (i & -i);
+
+      for (auto j = i-1; j > x; j -= j & -j)
+      {
+        v -= this->tree[j];
+      }
+
+      return v;
+    }
+};
 
 class Solution
 {
   public:
     std::vector<int> countSmaller(const std::vector<int> &nums)
     {
-      std::vector<int>::size_type depth = std::ceil(std::log2(nums.size()));
-      std::vector<int>::size_type size  = std::pow(2, depth+1) - 1;
-      std::vector<int>::size_type shift = std::pow(2, depth) - 1;
-
-      std::vector<int> segment_tree (size, 0);
-      std::vector<int> sorted       (nums);
-      std::unordered_map<int, std::vector<int>::size_type> maps;
-
+      std::vector<int> sorted (nums);
       std::sort(std::begin(sorted), std::end(sorted));
+
+      std::unordered_map<int, std::vector<int>::size_type> maps;
       for (std::vector<int>::size_type i = 0; i < sorted.size(); i++)
       {
         maps[sorted[i]] = i;
       }
 
       std::vector<int> results (nums.size());
+      BIT bit (results);
 
       for (std::vector<int>::size_type i = nums.size(); i-- > 0; )
       {
@@ -34,57 +91,27 @@ class Solution
 
         if (pos != 0)
         {
-          results[i] = query(segment_tree, 0, 0, shift, 0, pos-1);
+          results[i] = bit.query(pos-1);
         }
 
-        for (auto j = shift+pos; j != 0; j = (j-1)/2)
-        {
-          segment_tree[j]++;
-        }
+        bit.add(pos, 1);
       }
 
       return results;
-    }
-
-    int query(const std::vector<int>            &segment_tree,
-              const std::vector<int>::size_type  current,
-              const std::vector<int>::size_type  current_left,
-              const std::vector<int>::size_type  current_right,
-              const std::vector<int>::size_type  target_left,
-              const std::vector<int>::size_type  target_right)
-    {
-      if (current_left == target_left && current_right == target_right)
-      {
-        return segment_tree[current];
-      }
-
-      auto middle = current_left + (current_right - current_left)/2;
-      if (target_right <= middle)
-      {
-        return query(segment_tree,
-                     current*2+1, current_left, middle,
-                     target_left, target_right);
-      }
-      else if (target_left > middle)
-      {
-        return query(segment_tree,
-                     current*2+2, middle+1, current_right,
-                     target_left, target_right);
-      }
-      else
-      {
-        return query(segment_tree,
-                     current*2+1, current_left, middle,
-                     target_left, middle)
-             + query(segment_tree,
-                     current*2+2, middle+1, current_right,
-                     middle+1, target_right);
-      }
     }
 };
 
 int main(void)
 {
+  BIT obj ({1,2,3,4,5});
+  assert(obj.lookup(0) == 1);
+  assert(obj.lookup(2) == 3);
+  assert(obj.query(4) == 15);
+  assert(obj.query(3) == 10);
+  obj.add(1, 5);
+  assert(obj.query(4) == 20);
+  assert(obj.query(3) == 15);
+
   Solution s;
   assert(s.countSmaller({}) == std::vector<int> ({}));
   assert(s.countSmaller({1}) == std::vector<int> ({0}));
