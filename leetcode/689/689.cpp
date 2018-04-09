@@ -11,76 +11,39 @@ class Solution
     {
       const std::vector<int>::size_type N = nums.size();
 
-      std::vector<std::vector<int>> dp (3, std::vector<int> (N, INT_MIN));
-      std::vector<std::vector<std::vector<int>>> indexes (3, std::vector<std::vector<int>> (N));
+      std::vector<std::vector<int>> dp    (4, std::vector<int> (N+1, 0));
+      std::vector<std::vector<int>> index (4, std::vector<int> (N+1));
+      std::vector<int>              accu  (N+1, 0);
 
-      for (int subarray = 0; subarray < 3; subarray++)
+      for (std::vector<int>::size_type i = 0; i < N; i++)
       {
-        int sum = 0;
-        for (int i = 1; i <= k; i++)
+        accu[i+1] = accu[i] + nums[i];
+      }
+
+      for (int i = 1; i < 4; i++)
+      {
+        for (std::vector<int>::size_type j = k*i; j <= N; j++)
         {
-          sum += nums[N - k*subarray - i];
-        }
+          int total = accu[j] - accu[j-k] + dp[i-1][j-k];
 
-        int total = sum + (subarray != 0 ? dp[subarray-1][N-k*subarray]: 0);
-        dp[subarray][N - k*(subarray+1)] = total;
-        indexes[subarray][N - k*(subarray+1)].emplace_back(N - k*(subarray+1));
-        if (subarray != 0)
-        {
-          indexes[subarray][N-k*(subarray+1)].insert(std::end(indexes[subarray][N-k*(subarray+1)]),
-                                                     std::begin(indexes[subarray-1][N-k*subarray]),
-                                                     std::end(indexes[subarray-1][N-k*subarray]));
-        }
-
-        for (std::vector<int>::size_type i = nums.size() - k*(subarray+1); i-- > 0; )
-        {
-          sum += nums[i];
-          sum -= nums[i+k];
-
-          int total = sum + (subarray != 0 ? dp[subarray-1][i+k]: 0);
-
-          if (total >= dp[subarray][i+1])
+          if (total > dp[i][j-1])
           {
-            dp[subarray][i] = total;
-            indexes[subarray][i].emplace_back(i);
-
-            if (subarray != 0)
-            {
-              indexes[subarray][i].insert(std::end(indexes[subarray][i]),
-                                          std::begin(indexes[subarray-1][i+k]),
-                                          std::end(indexes[subarray-1][i+k]));
-            }
+            dp[i][j] = total;
+            index[i][j] = j-k;
           }
           else
           {
-            dp[subarray][i] = dp[subarray][i+1];
-            indexes[subarray][i] = indexes[subarray][i+1];
+            dp[i][j] = dp[i][j-1];
+            index[i][j] = index[i][j-1];
           }
         }
-
-        // for (const auto &v: dp[subarray])
-        // {
-        //   std::cerr << v << ' ';
-        // }
-        // std::cerr << '\n';
-
-        // for (const auto &v: indexes[subarray])
-        // {
-        //   bool first = true;
-        //   for (const auto &vv: v)
-        //   {
-        //     if (!first)
-        //       std::cerr << ',';
-
-        //     std::cerr << vv;
-        //     first = false;
-        //   }
-        //   std::cerr << ' ';
-        // }
-        // std::cerr << '\n';
       }
 
-      return indexes.back().front();
+      std::vector<int> result (3);
+      result[2] = index[3][N];
+      result[1] = index[2][result[2]];
+      result[0] = index[1][result[1]];
+      return result;
     }
 };
 
