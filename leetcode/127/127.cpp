@@ -1,8 +1,6 @@
 #include <cassert>
 #include <iostream>
-#include <queue>
 #include <string>
-#include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
@@ -13,115 +11,56 @@ class Solution
                      const std::string endWord,
                      const std::vector<std::string>& wordList)
     {
-      bool exist = false;
-      for (const auto &word: wordList)
-      {
-        if (word == endWord)
-        {
-          exist = true;
-          break;
-        }
-      }
-
-      if (!exist)
+      std::unordered_set<std::string> wordSet (std::begin(wordList), std::end(wordList));
+      if (wordSet.find(endWord) == wordSet.end())
       {
         return 0;
       }
 
-      if (beginWord == endWord)
+      std::unordered_set<std::string> head ({beginWord});
+      std::unordered_set<std::string> tail ({endWord});
+      wordSet.erase(beginWord);
+      wordSet.erase(endWord);
+
+      int distance = 2;
+
+      while (!head.empty() && !tail.empty())
       {
-        return 1;
-      }
-
-      std::queue<std::pair<std::string, int>> forward_queue, backward_queue;
-      forward_queue.emplace(beginWord, 1);
-      backward_queue.emplace(endWord, 1);
-
-      std::unordered_set<std::string> forward_duplicates ({beginWord});
-      std::unordered_set<std::string> backward_duplicates ({endWord});
-
-      std::unordered_map<std::string, int> map;
-      map[beginWord] = 1;
-      map[endWord] = 1;
-
-      for (int i = 1; i + i - 1 <= wordList.size(); i++)
-      {
-        while (!forward_queue.empty() && forward_queue.front().second == i)
+        if (head.size() > tail.size())
         {
-          std::string currentWord = forward_queue.front().first;
-          int         length      = forward_queue.front().second;
-          forward_queue.pop();
+          std::swap(head, tail);
+        }
 
-          for (const auto &word: wordList)
+        std::unordered_set<std::string> middle;
+
+        for (auto word: head)
+        {
+          for (auto &ch: word)
           {
-            if (forward_duplicates.find(word) != forward_duplicates.end())
+            char temp = ch;
+
+            for (char i = 'a'; i <= 'z'; i++)
             {
-              continue;
+              ch = i;
+
+              if (tail.find(word) != tail.end())
+              {
+                return distance;
+              }
+
+              if (wordSet.find(word) != wordSet.end())
+              {
+                middle.emplace(word);
+                wordSet.erase(word);
+              }
             }
 
-            int changed = 0;
-            for (std::string::size_type i = 0; i < word.size(); i++)
-            {
-              if (word[i] != currentWord[i])
-              {
-                changed++;
-              }
-            }
-
-            if (changed == 1)
-            {
-              if (map[word] == 0)
-              {
-                map[word] = length+1;
-                forward_queue.emplace(word, length+1);
-                forward_duplicates.emplace(word);
-              }
-              else
-              {
-                return length+map[word];
-              }
-            }
+            ch = temp;
           }
         }
 
-        while (!backward_queue.empty() && backward_queue.front().second == i)
-        {
-          std::string currentWord = backward_queue.front().first;
-          int         length      = backward_queue.front().second;
-          backward_queue.pop();
-
-          for (const auto &word: wordList)
-          {
-            if (backward_duplicates.find(word) != backward_duplicates.end())
-            {
-              continue;
-            }
-
-            int changed = 0;
-
-            for (std::string::size_type i = 0; i < word.size(); i++)
-            {
-              if (word[i] != currentWord[i])
-              {
-                changed++;
-              }
-            }
-
-            if (changed == 1)
-            {
-              if (map[word] == 0)
-              {
-                map[word] = length+1;
-                backward_queue.emplace(word, length+1);
-                backward_duplicates.emplace(word);
-              }
-              else
-              {
-                return length+map[word];
-              }
-            }
-          }
-        }
+        distance++;
+        std::swap(head, middle);
       }
 
       return 0;
@@ -137,7 +76,6 @@ int main(void)
   assert(s.ladderLength("hee", "cog", {"hot","dot","dog","lot","log","cog"}) == 0);
   assert(s.ladderLength("hit", "cog", {"hot","pot","cog"}) == 0);
   assert(s.ladderLength("hit", "cog", {"hot","dot","dog","lot","log"}) == 0);
-
   assert(s.ladderLength("a", "c", {"b", "c"}) == 2);
   assert(s.ladderLength("hot", "dog", {"hot", "dog", "dot"}) == 3);
   return 0;
