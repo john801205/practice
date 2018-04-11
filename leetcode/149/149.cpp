@@ -1,8 +1,6 @@
 #include <cassert>
-#include <algorithm>
 #include <iostream>
 #include <unordered_map>
-#include <unordered_set>
 #include <vector>
 
 struct Point
@@ -13,75 +11,62 @@ struct Point
     Point(int a, int b) : x(a), y(b) {}
 };
 
-bool operator<(const Point &lhs, const Point &rhs)
-{
-  if (lhs.x != rhs.x)
-  {
-    return lhs.x < rhs.x;
-  }
-  else
-  {
-    return lhs.y < rhs.y;
-  }
-}
-
 class Solution
 {
   public:
     int maxPoints(std::vector<Point>& points)
     {
-      if (points.size() == 0)
-        return 0;
+      if (points.size() <= 2)
+        return points.size();
 
-      std::unordered_map<int, std::unordered_map<int, int>> counts;
-      for (const auto point: points)
-        counts[point.x][point.y]++;
-
-      std::vector<Point> uniques;
-      std::sort(std::begin(points), std::end(points));
+      int max = 0;
 
       for (std::vector<Point>::size_type i = 0; i < points.size(); i++)
-        if (i == 0 || points[i].x != points[i-1].x || points[i].y != points[i-1].y)
-          uniques.emplace_back(points[i].x, points[i].y);
-
-      std::vector<std::unordered_map<double, int>> maps (uniques.size());
-      int max = counts[points[0].x][points[0].y];
-
-      for (std::vector<Point>::size_type i = 1; i < uniques.size(); i++)
       {
-        std::unordered_set<double> sets;
+        std::unordered_map<int, std::unordered_map<int,int>> map;
+        int duplicates = 0, vertical = 0, localmax = 0;
 
-        for (std::vector<Point>::size_type j = i; j-- > 0; )
+        for (std::vector<Point>::size_type j = 0; j < points.size(); j++)
         {
-          double m = slope(uniques[j], uniques[i]);
-
-          if (sets.find(m) != sets.end())
-            continue;
-
-          if (maps[j][m] == 0)
-            maps[i][m] += counts[uniques[j].x][uniques[j].y] + counts[uniques[i].x][uniques[i].y];
+          if (points[i].x == points[j].x && points[i].y == points[j].y)
+          {
+            duplicates++;
+          }
+          else if (points[i].x == points[j].x)
+          {
+            vertical++;
+          }
           else
-            maps[i][m] += maps[j][m] + counts[uniques[i].x][uniques[i].y];
+          {
+            int p = points[i].x - points[j].x;
+            int q = points[i].y - points[j].y;
+            int g = gcd(q, p);
 
-          sets.emplace(m);
+            p /= g;
+            q /= g;
 
-          max = std::max(max, maps[i][m]);
+            map[p][q]++;
+            localmax = std::max(localmax, map[p][q]);
+          }
         }
+
+        localmax = std::max(localmax, vertical) + duplicates;
+        max = std::max(max, localmax);
       }
 
       return max;
     }
 
-    double slope(Point a, Point b)
+    int gcd(int p, int q)
     {
-      if (a.x == b.x)
+      while (p % q != 0)
       {
-        return std::numeric_limits<double>::max();
+        int temp = q;
+        q = p % q;
+        p = temp;
       }
-      else
-      {
-        return static_cast<double>(b.y - a.y) / (b.x - a.x);
-      }
+
+      return q;
     }
 };
 
