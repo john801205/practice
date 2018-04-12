@@ -8,11 +8,13 @@ class Solution
   public:
     int calculate(const std::string s)
     {
-      std::stack<char> operators;
+      std::stack<int> operators;
       std::stack<int> numbers;
 
-      bool isNumber = false;
+      int sign = 1;
       int number = 0;
+      int result = 0;
+
       for (std::string::size_type i = 0; i < s.size(); i++)
       {
         if (s[i] == ' ')
@@ -21,90 +23,43 @@ class Solution
         }
         else if (s[i] >= '0' && s[i] <= '9')
         {
-          isNumber = true;
           number = number * 10 + s[i] - '0';
+        }
+        else if (s[i] == '+')
+        {
+          result += number * sign;
+          sign = 1;
+          number = 0;
+        }
+        else if (s[i] == '-')
+        {
+          result += number * sign;
+          sign = -1;
+          number = 0;
         }
         else if (s[i] == '(')
         {
-          operators.emplace('(');
-          isNumber = false;
+          operators.emplace(sign);
+          numbers.emplace(result);
+
+          sign = 1;
           number = 0;
+          result = 0;
         }
-        else
+        else if (s[i] == ')')
         {
-          if (isNumber)
-          {
-            numbers.emplace(number);
-            isNumber = false;
-            number = 0;
-          }
-
-          while (!operators.empty() && operators.top() != '(')
-          {
-            int op2 = numbers.top();
-            numbers.pop();
-            int op1 = numbers.top();
-            numbers.pop();
-
-            char op = operators.top();
-            operators.pop();
-
-            if (op == '+')
-              numbers.emplace(op1+op2);
-            else
-              numbers.emplace(op1-op2);
-          }
-
-          if (s[i] == ')')
-          {
-            operators.pop();
-            while (!operators.empty() && operators.top() != '(')
-            {
-              int op2 = numbers.top();
-              numbers.pop();
-              int op1 = numbers.top();
-              numbers.pop();
-
-              char op = operators.top();
-              operators.pop();
-
-              if (op == '+')
-                numbers.emplace(op1+op2);
-              else
-                numbers.emplace(op1-op2);
-            }
-          }
-          else
-          {
-            operators.emplace(s[i]);
-          }
-        }
-      }
-
-      if (isNumber)
-      {
-        numbers.emplace(number);
-        isNumber = false;
-        number = 0;
-
-        while (!operators.empty() && operators.top() != '(')
-        {
-          int op2 = numbers.top();
+          result += number * sign;
+          result = numbers.top() + operators.top() * result;
           numbers.pop();
-          int op1 = numbers.top();
-          numbers.pop();
-
-          char op = operators.top();
           operators.pop();
 
-          if (op == '+')
-            numbers.emplace(op1+op2);
-          else
-            numbers.emplace(op1-op2);
+          sign = 1;
+          number = 0;
         }
       }
 
-      return numbers.top();
+      result += number * sign;
+      return result;
     }
 };
 
