@@ -6,30 +6,24 @@ class Solution
   public:
     int findDuplicate(const std::vector<int> &nums)
     {
-      int left = 1, right = nums.size()-1;
+      int tortoise = 0, hare = 0;
 
-      while (left < right)
+      do
       {
-        int middle = left + (right - left) / 2;
+        tortoise = nums[tortoise];
+        hare = nums[nums[hare]];
+      }
+      while (tortoise != hare);
 
-        int smaller = 0, equal = 0;
-        for (const auto &num: nums)
-        {
-          if (num < middle)
-            smaller++;
-          if (num <= middle)
-            equal++;
-        }
+      int ptr1 = nums[0], ptr2 = tortoise;
 
-        if (equal - smaller > 1)
-          return middle;
-        else if (equal <= middle)
-          left = middle+1;
-        else
-          right = middle;
+      while (ptr1 != ptr2)
+      {
+        ptr1 = nums[ptr1];
+        ptr2 = nums[ptr2];
       }
 
-      return left;
+      return ptr1;
     }
 };
 
