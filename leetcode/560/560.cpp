@@ -16,12 +16,7 @@ class Solution
       for (const auto &num: nums)
       {
         sum += num;
-
-        if (maps.find(sum-k) != maps.end())
-        {
-          count += maps[sum-k];
-        }
-
+        count += maps[sum-k];
         maps[sum]++;
       }
 
