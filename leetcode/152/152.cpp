@@ -8,56 +8,25 @@ class Solution
   public:
     int maxProduct(const std::vector<int> &nums)
     {
-      int maxPositive = 0, minNegative = 0;
-      int max = INT_MIN;
+      int maxProduct = nums[0];
+      int minProduct = nums[0];
+      int max = nums[0];
 
-      for (std::vector<int>::size_type i = 0; i < nums.size(); i++)
+      for (std::vector<int>::size_type i = 1; i < nums.size(); i++)
       {
-        if (nums[i] < 0)
+        if (nums[i] >= 0)
         {
-          if (maxPositive != 0 && minNegative != 0)
-          {
-            int temp = maxPositive;
-            maxPositive = minNegative * nums[i];
-            minNegative = temp * nums[i];
-            max = std::max(max, maxPositive);
-          }
-          else if (maxPositive != 0)
-          {
-            minNegative = maxPositive * nums[i];
-            maxPositive = 0;
-            max = std::max(max, minNegative);
-          }
-          else if (minNegative != 0)
-          {
-            maxPositive = minNegative * nums[i];
-            minNegative = nums[i];
-            max = std::max(max, maxPositive);
-          }
-          else
-          {
-            minNegative = nums[i];
-            max = std::max(max, minNegative);
-          }
-        }
-        else if (nums[i] > 0)
-        {
-          if (maxPositive != 0)
-            maxPositive = maxPositive * nums[i];
-          else
-            maxPositive = nums[i];
-
-          if (minNegative != 0)
-            minNegative = minNegative * nums[i];
-
-          max = std::max(max, maxPositive);
+          maxProduct = std::max(maxProduct * nums[i], nums[i]);
+          minProduct = std::min(minProduct * nums[i], nums[i]);
         }
         else
         {
-          maxPositive = 0;
-          minNegative = 0;
-          max = std::max(max, 0);
+          int temp = maxProduct;
+          maxProduct = std::max(minProduct * nums[i], nums[i]);
+          minProduct = std::min(temp * nums[i], nums[i]);
         }
+
+        max = std::max(max, maxProduct);
       }
 
       return max;
