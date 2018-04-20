@@ -14,20 +14,8 @@ struct Node
 
 bool operator<(const Node &lhs, const Node &rhs)
 {
-  if (lhs.profit != rhs.profit)
-    return lhs.profit < rhs.profit;
-  else
-    return lhs.capital < rhs.capital;
+  return lhs.capital > rhs.capital;
 }
-
-class Compare
-{
-  public:
-    bool operator() (const Node &lhs, const Node &rhs)
-    {
-      return rhs.capital < lhs.capital;
-    }
-};
 
 class Solution
 {
@@ -37,34 +25,28 @@ class Solution
                              const std::vector<int> &Profits,
                              const std::vector<int> &Capital)
     {
-      std::priority_queue<Node> enough;
-      std::priority_queue<Node, std::vector<Node>, Compare> over;
+      std::priority_queue<Node> over;
+      std::priority_queue<int> enough;
 
       for (std::vector<int>::size_type i = 0; i < Profits.size(); i++)
-          enough.emplace(Profits[i], Capital[i]);
+          over.emplace(Profits[i], Capital[i]);
 
       int earned = W;
       for (int i = 0; i < k; i++)
       {
         while (!over.empty() && over.top().capital <= earned)
         {
-          enough.emplace(over.top());
+          enough.emplace(over.top().profit);
           over.pop();
         }
 
-        while (!enough.empty() && enough.top().capital > earned)
-        {
-          over.emplace(enough.top());
-          enough.pop();
-        }
-
-        if (enough.empty())
+        if (enough.empty() || enough.top() == 0)
           break;
 
-        const auto project = enough.top();
+        const auto profit = enough.top();
         enough.pop();
 
-        earned += project.profit;
+        earned += profit;
       }
 
       return earned;
