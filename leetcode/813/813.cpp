@@ -7,30 +7,30 @@ class Solution
   public:
     double largestSumOfAverages(const std::vector<int> &A, const int K)
     {
-      std::vector<std::vector<double>> dp (K, std::vector<double> (A.size(), 0));
+      std::vector<double> dp (A.size(), 0);
 
       double sum = 0;
-      for (std::vector<double>::size_type i = 0; i < dp[0].size(); i++)
+      for (std::vector<double>::size_type i = 0; i < dp.size(); i++)
       {
         sum += A[i];
-        dp[0][i] = sum / (i+1);
+        dp[i] = sum / (i+1);
       }
 
       for (int i = 1; i < K; i++)
       {
-        for (std::vector<double>::size_type j = i; j < dp[i].size(); j++)
+        for (std::vector<double>::size_type j = dp.size(); j-- > i; )
         {
           double sum = 0;
 
           for (std::vector<double>::size_type k = j; k >= i; k--)
           {
             sum += A[k];
-            dp[i][j] = std::max(dp[i][j], sum / (j-k+1) + dp[i-1][k-1]);
+            dp[j] = std::max(dp[j], sum / (j-k+1) + dp[k-1]);
           }
         }
       }
 
-      return dp.back().back();
+      return dp.back();
     }
 };
 
