@@ -43,16 +43,8 @@ class LFUCache
 
       if (map.find(key) != map.end())
       {
-        const auto tuple = *map[key];
-        const auto freq  = std::get<2>(tuple);
-
-        list[freq].erase(map[key]);
-
-        if (min_freq == freq && list[freq].empty())
-          min_freq++;
-
-        const auto ptr = list[freq+1].insert(std::begin(list[freq+1]), {key, value, freq+1});
-        map[key] = ptr;
+        std::get<1>(*map[key]) = value;
+        get(key);
       }
       else
       {
@@ -98,6 +90,8 @@ int main()
   assert(cache.get(1) == -1);
   assert(cache.get(3) == 3);
   assert(cache.get(4) == 4);
+  cache.put(4, 2);
+  assert(cache.get(4) == 2);
 
   LFUCache cache2(0);
   cache2.put(1, 1);
