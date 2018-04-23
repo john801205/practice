@@ -8,24 +8,21 @@ class Solution
     int minPatches(const std::vector<int> &nums, int n)
     {
       int patch = 0;
-      long minSuccess = 0;
+      long miss = 1;
+      std::vector<int>::size_type i = 0;
 
-      for (std::vector<int>::size_type i = 0; minSuccess < n && i < nums.size(); )
+      while (miss <= n)
       {
-        while (minSuccess < n && nums[i] > minSuccess+1)
+        if (i < nums.size() && nums[i] <= miss)
         {
-          patch++;
-          minSuccess = 2 * minSuccess + 1;
+          miss += nums[i];
+          i++;
         }
-
-        minSuccess = minSuccess + nums[i];
-        i++;
-      }
-
-      while (minSuccess < n)
-      {
-        patch++;
-        minSuccess = 2 * minSuccess + 1;
+        else
+        {
+          miss += miss;
+          patch++;
+        }
       }
 
       return patch;
