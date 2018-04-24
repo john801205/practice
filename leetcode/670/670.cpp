@@ -9,6 +9,7 @@ class Solution
     int maximumSwap(int num)
     {
       std::vector<int> digits;
+      std::vector<std::vector<int>::size_type> lasts (10, 0);
 
       while (num != 0)
       {
@@ -19,31 +20,26 @@ class Solution
       std::reverse(std::begin(digits), std::end(digits));
 
       for (std::vector<int>::size_type i = 0; i < digits.size(); i++)
-      {
-        std::vector<int>::size_type maxj = i;
+        lasts[digits[i]] = i;
 
-        for (std::vector<int>::size_type j = i+1; j < digits.size(); j++)
-        {
-          if (digits[j] >= digits[maxj])
-          {
-            maxj = j;
-          }
-        }
-
-        if (maxj != i && digits[maxj] != digits[i])
-        {
-          std::swap(digits[i], digits[maxj]);
-          break;
-        }
-      }
-
-      int result = 0;
       for (std::vector<int>::size_type i = 0; i < digits.size(); i++)
       {
-        result = result * 10 + digits[i];
+        for (std::vector<int>::size_type j = 9; j > i; j--)
+        {
+          if (lasts[j] > i)
+          {
+            std::swap(digits[lasts[j]], digits[i]);
+
+            int result = 0;
+            for (std::vector<int>::size_type k = 0; k < digits.size(); k++)
+              result = result * 10 + digits[k];
+
+            return result;
+          }
+        }
       }
 
-      return result;
+      return num;
     }
 };
 
