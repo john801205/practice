@@ -8,40 +8,22 @@ class Solution
   public:
     int numberOfArithmeticSlices(const std::vector<int> &A)
     {
-      std::vector<std::unordered_map<std::vector<int>::size_type, int>> dp (A.size());
+      std::vector<std::unordered_map<long, int>> dp (A.size());
       int sum = 0;
 
-      for (std::vector<int>::size_type i = 2; i < A.size(); i++)
+      for (std::vector<int>::size_type i = 1; i < A.size(); i++)
       {
         for (std::vector<int>::size_type j = 0; j < i; j++)
         {
-          for (const auto &pair: dp[j])
-          {
-            long diff = A[i], diff2 = A[j];
-            diff -= A[j];
-            diff2 -= A[pair.first];
+          long diff = A[i];
+          diff -= A[j];
 
-            if (diff == diff2)
-            {
-              dp[i][j] += pair.second;
-              sum += pair.second;
-            }
-          }
-        }
+          int result = 0;
+          if (dp[j].find(diff) != dp[j].end())
+            result = dp[j][diff];
 
-        for (std::vector<int>::size_type j = 0; j+1 < i; j++)
-        {
-          for (std::vector<int>::size_type k = j+1; k < i; k++)
-          {
-            long diff = A[i], diff2 = A[k];
-            diff -= A[k];
-            diff2 -= A[j];
-            if (diff == diff2)
-            {
-              dp[i][k] += 1;
-              sum += 1;
-            }
-          }
+          dp[i][diff] += result + 1;
+          sum += result;
         }
       }
 
