@@ -7,34 +7,22 @@
 class Solution
 {
   public:
-    std::string removeKdigits(const std::string num, const int k)
+    std::string removeKdigits(const std::string num, int k)
     {
-      std::stack<char> stack;
-      std::string::size_type i = 0;
-      int count = 0;
-
-      while (count < k)
-      {
-        while (stack.empty() || (i < num.size() && num[i] >= stack.top()))
-        {
-          stack.push(num[i]);
-          i++;
-        }
-
-        stack.pop();
-        count++;
-      }
-
       std::string result;
 
-      while (!stack.empty())
+      for (const auto &digit: num)
       {
-        result += stack.top();
-        stack.pop();
+        while (k > 0 && result.size() > 0 && result.back() > digit)
+        {
+          result.pop_back();
+          k--;
+        }
+
+        result += digit;
       }
 
-      std::reverse(std::begin(result), std::end(result));
-      result += num.substr(i);
+      result.resize(result.size() - k);
 
       for (std::string::size_type i = 0; i < result.size(); i++)
         if (result[i] != '0')
@@ -50,5 +38,6 @@ int main()
   assert(s.removeKdigits("1432219", 3) == "1219");
   assert(s.removeKdigits("10200", 1) == "200");
   assert(s.removeKdigits("10", 2) == "0");
+  assert(s.removeKdigits("123456789", 3) == "123456");
   return 0;
 }
