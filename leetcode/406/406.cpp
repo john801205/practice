@@ -3,20 +3,17 @@
 #include <iostream>
 #include <vector>
 
-bool cmp(const std::pair<int,int> &lhs, const std::pair<int,int> &rhs)
-{
-  if (lhs.first != rhs.first)
-    return lhs.first > rhs.first;
-  else
-    return lhs.second < rhs.second;
-}
-
 class Solution
 {
   public:
     std::vector<std::pair<int, int>>
     reconstructQueue(const std::vector<std::pair<int, int>> &people)
     {
+      auto cmp = [] (const std::pair<int,int> &lhs, const std::pair<int,int> &rhs)
+      {
+        return lhs.first != rhs.first ? lhs.first > rhs.first : lhs.second < rhs.second;
+      };
+
       auto copy (people);
       std::sort(std::begin(copy), std::end(copy), cmp);
 
