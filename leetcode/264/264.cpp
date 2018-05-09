@@ -1,25 +1,29 @@
 #include <cassert>
 #include <iostream>
-#include <set>
+#include <vector>
 
 class Solution
 {
   public:
     int nthUglyNumber(int n)
     {
-      std::set<long> sets = {1};
+      std::vector<int> numbers(n);
+      std::vector<int>::size_type p1 = 0, p2 = 0, p3 = 0;
 
+      numbers[0] = 1;
       for (int i = 1; i < n; i++)
       {
-        long number = *sets.begin();
-        sets.erase(sets.begin());
+        numbers[i] = std::min(numbers[p1]*2, std::min(numbers[p2]*3, numbers[p3]*5));
 
-        sets.emplace(number * 2);
-        sets.emplace(number * 3);
-        sets.emplace(number * 5);
+        if (numbers[p1] * 2 == numbers[i])
+          p1++;
+        if (numbers[p2] * 3 == numbers[i])
+          p2++;
+        if (numbers[p3] * 5 == numbers[i])
+          p3++;
       }
 
-      return *sets.begin();
+      return numbers.back();
     }
 };
 
