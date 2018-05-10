@@ -1,6 +1,5 @@
 #include <cassert>
 #include <iostream>
-#include <queue>
 #include <unordered_map>
 #include <vector>
 
@@ -9,20 +8,27 @@ class Solution
   public:
     std::vector<int> topKFrequent(const std::vector<int>& nums, const int k)
     {
-      std::priority_queue<std::pair<int,int>> queue;
-      std::unordered_map<int, int> map;
-      std::vector<int> result(k);
+      std::vector<std::vector<int>> buckets (nums.size()+1, std::vector<int> ());
+      std::unordered_map<int, int>  map;
+      std::vector<int>              result (k);
 
       for (const auto &num: nums)
         map[num]++;
 
       for (const auto itr: map)
-        queue.emplace(itr.second, -itr.first);
+        buckets[itr.second].emplace_back(itr.first);
 
-      for (int i = 0; i < k; i++)
+      std::vector<int>::size_type i = 0;
+      for (auto itr = buckets.rbegin(); itr != buckets.rend(); itr++)
       {
-        result[i] = -queue.top().second;
-        queue.pop();
+        for (const auto &num: *itr)
+        {
+          result[i] = num;
+          i++;
+
+          if (i == result.size())
+            break;
+        }
       }
 
       return result;
