@@ -1,5 +1,5 @@
 #include <iostream>
-#include <unordered_set>
+#include <unordered_map>
 #include <vector>
 
 struct TreeNode
@@ -19,34 +19,29 @@ class Solution
       if (inorder.size() == 0)
         return nullptr;
 
-      std::vector<int>::size_type preindex = 0, inindex = 0;
-      std::unordered_set<int> stack;
-      return buildTree(preorder, preindex, inorder, inindex, stack);
+      std::unordered_map<int, std::vector<int>::size_type> map;
+      for (std::vector<int>::size_type i = 0; i < inorder.size(); i++)
+        map[inorder[i]] = i;
+
+      return buildTree(preorder, 0, inorder, 0, inorder.size()-1, map);
     }
 
   private:
     TreeNode* buildTree(const std::vector<int>            &preorder,
-                              std::vector<int>::size_type &preindex,
+                              std::vector<int>::size_type  preindex,
                         const std::vector<int>            &inorder,
-                              std::vector<int>::size_type &inindex,
-                              std::unordered_set<int>     &stack)
+                              int  instart,
+                              int  inend,
+                        const std::unordered_map<int, std::vector<int>::size_type> &map)
     {
-      if (preindex >= preorder.size())
+      if (preindex >= preorder.size() || instart > inend)
         return nullptr;
 
       TreeNode *current = new TreeNode (preorder[preindex]);
-      stack.emplace(current->val);
-      preindex++;
+      std::vector<int>::size_type inindex = map.at(preorder[preindex]);
 
-      if (current->val != inorder[inindex])
-        current->left = buildTree(preorder, preindex, inorder, inindex, stack);
-
-      inindex++;
-
-      if (inindex < inorder.size() && stack.find(inorder[inindex]) == stack.end())
-        current->right = buildTree(preorder, preindex, inorder, inindex, stack);
-
-      stack.erase(current->val);
+      current->left = buildTree(preorder, preindex+1, inorder, instart, inindex-1, map);
+      current->right = buildTree(preorder, preindex+inindex-instart+1, inorder, inindex+1, inend, map);
 
       return current;
     }
