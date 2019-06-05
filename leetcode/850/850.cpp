@@ -1,177 +1,113 @@
 #include <cassert>
+#include <algorithm>
 #include <iostream>
 #include <set>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #define MODULUS (1000000007)
 
-class QuadNode
+class SegmentNode
 {
   public:
-    bool value;
-    QuadNode *children[4];
+    int count, area;
 
-    QuadNode(): value{false}, children{}
+    SegmentNode(): count{0}, area{0}
     {
-      for (int i = 0; i < 4; i++)
-        children[i] = nullptr;
-    }
-
-    ~QuadNode()
-    {
-      for (int i = 0; i < 4; i++)
-        if (children[i] != nullptr)
-          delete children[i];
     }
 };
 
-class QuadTree
+class SegmentTree
 {
   public:
-    QuadNode *root;
-    std::vector<int> axisX, axisY;
+    std::vector<SegmentNode> tree;
+    std::vector<int> axis;
+    std::unordered_map<int, std::vector<int>::size_type> map;
 
-    QuadTree(const std::vector<std::vector<int>> &rectangles)
-      :root{nullptr}, axisX{}, axisY{}
+    SegmentTree(const std::vector<std::vector<int>> &rectangles)
+      :tree{}, axis{}, map{}
     {
-      root = new QuadNode();
-
-      std::set<int> setX, setY;
+      std::set<int> set;
       for (const auto &rect: rectangles)
       {
-        const auto x1 = rect[0], y1 = rect[1], x2 = rect[2], y2 = rect[3];
-        setX.emplace(x1);
-        setX.emplace(x2);
-        setY.emplace(y1);
-        setY.emplace(y2);
+        const auto x1 = rect[0], x2 = rect[2];
+        set.emplace(x1);
+        set.emplace(x2);
       }
+      axis.insert(axis.end(), set.begin(), set.end());
 
-      axisX.insert(axisX.end(), setX.begin(), setX.end());
-      axisY.insert(axisY.end(), setY.begin(), setY.end());
+      for (std::vector<int>::size_type i = 0; i < axis.size(); i++)
+        map[axis[i]] = i;
+
+      tree.resize(4 * axis.size());
     }
 
-    ~QuadTree()
+    void update(int x1, int x2, int value)
     {
-      delete root;
-    }
-
-    void update(const std::vector<int> &rect)
-    {
-      if (axisX.size() == 0 || axisY.size() == 0)
+      if (axis.size() == 0)
         return;
 
-      update(root, 0, 0, axisX.size()-1, axisY.size()-1, rect);
+      const auto index1 = map[x1], index2 = map[x2];
+      update(0, 0, axis.size()-1, index1, index2-1, value);
     }
 
     unsigned int query()
     {
-      if (axisX.size() == 0 || axisY.size() == 0)
+      if (axis.size() == 0)
         return 0;
 
-      return query(root, 0, 0, axisX.size()-1, axisY.size()-1);
+      return tree[0].area;
     }
 
-    void update(QuadNode *root,
-                const std::vector<int>::size_type indexX1,
-                const std::vector<int>::size_type indexY1,
-                const std::vector<int>::size_type indexX2,
-                const std::vector<int>::size_type indexY2,
-                const std::vector<int> &query)
+    void update(const std::vector<SegmentNode>::size_type i,
+                const std::vector<SegmentNode>::size_type left,
+                const std::vector<SegmentNode>::size_type right,
+                const std::vector<SegmentNode>::size_type qleft,
+                const std::vector<SegmentNode>::size_type qright,
+                const int value)
     {
-      if (root->value)
+      if (left > qright || right < qleft)
         return;
 
-      const auto x1 = axisX[indexX1], y1 = axisY[indexY1];
-      const auto x2 = axisX[indexX2], y2 = axisY[indexY2];
-      const std::vector<int> rect({x1, y1, x2, y2});
-
-      if (!intersect(rect, query))
-        return;
-
-      if (contains(query, rect))
+      if (left >= qleft && right <= qright)
       {
-        root->value = true;
-        for (int i = 0; i < 4; i++)
-        {
-          if (root->children[i] == nullptr)
-          {
-            delete root->children[i];
-            root->children[i] = nullptr;
-          }
-        }
+        tree[i].count += value;
+
+        if (tree[i].count != 0)
+          tree[i].area = (axis[right+1] - axis[left]) % MODULUS;
+        else if (left != right)
+          tree[i].area = (tree[2*i+1].area + tree[2*i+2].area) % MODULUS;
+        else
+          tree[i].area = 0;
 
         return;
       }
 
-      for (int i = 0; i < 4; i++)
-        if (root->children[i] == nullptr)
-          root->children[i] = new QuadNode();
+      const auto mid = left + (right - left) / 2;
+      update(2*i+1, left, mid, qleft, qright, value);
+      update(2*i+2, mid+1, right, qleft, qright, value);
 
-      const auto midX = indexX1 + (indexX2 - indexX1) / 2;
-      const auto midY = indexY1 + (indexY2 - indexY1) / 2;
+      if (tree[i].count != 0)
+        tree[i].area = (axis[right+1] - axis[left]) % MODULUS;
+      else
+        tree[i].area = (tree[2*i+1].area + tree[2*i+2].area) % MODULUS;
+    }
+};
 
-      update(root->children[0], indexX1, indexY1, midX, midY, query);
-      update(root->children[1], midX, indexY1, indexX2, midY, query);
-      update(root->children[2], indexX1, midY, midX, indexY2, query);
-      update(root->children[3], midX, midY, indexX2, indexY2, query);
+class Event
+{
+  public:
+    int y, x1, x2, value;
+
+    Event(int y, int x1, int x2, int value):
+      y{y}, x1{x1}, x2{x2}, value{value}
+    {
     }
 
-    unsigned int query(QuadNode *root,
-                       const std::vector<int>::size_type indexX1,
-                       const std::vector<int>::size_type indexY1,
-                       const std::vector<int>::size_type indexX2,
-                       const std::vector<int>::size_type indexY2)
+    friend bool operator<(const Event &lft, const Event &rht)
     {
-      if (root == nullptr)
-        return 0;
-
-      const auto x1 = axisX[indexX1], y1 = axisY[indexY1];
-      const auto x2 = axisX[indexX2], y2 = axisY[indexY2];
-      const std::vector<int> rect({x1, y1, x2, y2});
-
-      if (root->value)
-        return area(rect);
-
-      const auto midX = indexX1 + (indexX2 - indexX1) / 2;
-      const auto midY = indexY1 + (indexY2 - indexY1) / 2;
-
-      const auto q1 = query(root->children[0], indexX1, indexY1, midX, midY);
-      const auto q2 = query(root->children[1], midX, indexY1, indexX2, midY);
-      const auto q3 = query(root->children[2], indexX1, midY, midX, indexY2);
-      const auto q4 = query(root->children[3], midX, midY, indexX2, indexY2);
-
-      return ((q1 + q2) % MODULUS + (q3 + q4) % MODULUS) % MODULUS;
-    }
-
-    bool intersect(const std::vector<int> &A,
-                   const std::vector<int> &B)
-    {
-      const auto Ax1 = A[0], Ay1 = A[1], Ax2 = A[2], Ay2 = A[3];
-      const auto Bx1 = B[0], By1 = B[1], Bx2 = B[2], By2 = B[3];
-
-      if (Ax1 >= Bx2 || Ax2 <= Bx1)
-        return false;
-
-      if (Ay1 >= By2 || Ay2 <= By1)
-        return false;
-
-      return true;
-    }
-
-    bool contains(const std::vector<int> &A,
-                  const std::vector<int> &B)
-    {
-      const auto Ax1 = A[0], Ay1 = A[1], Ax2 = A[2], Ay2 = A[3];
-      const auto Bx1 = B[0], By1 = B[1], Bx2 = B[2], By2 = B[3];
-
-      return Ax1 <= Bx1 && Ax2 >= Bx2 && Ay1 <= By1 && Ay2 >= By2;
-    }
-
-    unsigned int area(const std::vector<int> &A)
-    {
-      const auto Ax1 = A[0], Ay1 = A[1], Ax2 = A[2], Ay2 = A[3];
-      return (1ULL * (Ax2 - Ax1) * (Ay2 - Ay1)) % MODULUS;
+      return lft.y <= rht.y;
     }
 };
 
@@ -180,10 +116,30 @@ class Solution
   public:
     int rectangleArea(const std::vector<std::vector<int>>& rectangles)
     {
-      QuadTree tree(rectangles);
+      if (rectangles.size() == 0)
+        return 0;
+
+      std::vector<Event> events;
       for (const auto &rect: rectangles)
-        tree.update(rect);
-      return tree.query();
+      {
+        const auto x1 = rect[0], y1 = rect[1], x2 = rect[2], y2 = rect[3];
+        events.emplace_back(y1, x1, x2, 1);
+        events.emplace_back(y2, x1, x2, -1);
+      }
+      std::sort(std::begin(events), std::end(events));
+
+      SegmentTree tree(rectangles);
+      auto prev_y = events[0].y;
+      int area = 0;
+      for (const auto &event: events)
+      {
+        const auto current_area = (1ULL * (event.y - prev_y) * tree.query()) % MODULUS;
+        area = (area + current_area) % MODULUS;
+        tree.update(event.x1, event.x2, event.value);
+        prev_y = event.y;
+      }
+
+      return area;
     }
 };
 
