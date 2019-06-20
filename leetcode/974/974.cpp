@@ -8,18 +8,14 @@ class Solution
     int subarraysDivByK(const std::vector<int> &A, int K)
     {
       std::vector<int> counts(K, 0);
-      int zeroIndex = 0;
-      int total = 0;
+      int prefix = 0, total = 0;
+      counts[0] = 1;
 
-      for (auto num: A)
+      for (const auto &num: A)
       {
-        while (num >= K) num -= K;
-        while (num < 0) num += K;
-
-        if (zeroIndex < num) zeroIndex += K;
-        zeroIndex -= num;
-        counts[(zeroIndex+num) % K] += 1;
-        total += counts[zeroIndex];
+        prefix = (prefix + num % K + K) % K;
+        total += counts[prefix];
+        counts[prefix] += 1;
       }
 
       return total;
